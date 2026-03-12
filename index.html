@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>關西輕旅行手冊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sakura-light: #FFF5F7;
+            --sakura-main: #FFB8C6;
+            --sakura-dark: #D77A8C;
+            --text-main: #4A4A4A;
+        }
+        body {
+            background-color: var(--sakura-light);
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'PingFang TC', sans-serif;
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 80px;
+        }
+        /* App UI Components */
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid rgba(255, 184, 198, 0.3);
+        }
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255, 184, 198, 0.2);
+            position: relative;
+        }
+        /* Card Types */
+        .card-transport { border-left: 4px solid #93C5FD; }
+        .card-spot { border-left: 4px solid var(--sakura-main); }
+        .card-food { border-left: 4px solid #FDBA74; }
+        
+        .nav-btn {
+            background: var(--sakura-dark);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            margin-top: 12px;
+        }
+        /* Highlight Tags */
+        .tag { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-right: 4px; display: inline-block; margin-bottom: 4px;}
+        .tag-buy { background: #FCE7F3; color: #BE185D; }
+        .tag-eat { background: #FFEDD5; color: #C2410C; }
+        .tag-code { background: #FEF9C3; color: #854D0E; font-family: monospace; font-size: 12px;}
+        .tag-weather { background: #F3F4F6; color: #4B5563; border-radius: 20px; padding: 4px 12px; font-size: 12px; }
+        
+        .story-box {
+            background: #FDF2F8;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            color: #831843;
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #9CA3AF;
+            font-size: 10px;
+            gap: 4px;
+        }
+        .nav-item.active {
+            color: var(--sakura-dark);
+            font-weight: bold;
+        }
+        
+        /* Tab Content */
+        .tab-pane { display: none; animation: fadeIn 0.3s ease; }
+        .tab-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header class="app-header p-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-lg font-bold tracking-wider text-gray-800" id="header-title">Day 1：大阪購物與夜景</h1>
+            <p class="text-xs text-gray-500 mt-1" id="header-date">5月8日</p>
+        </div>
+        <div class="tag-weather" id="header-weather">
+            <i class="fas fa-sun text-yellow-500"></i> 22°C
+        </div>
+    </header>
+
+    <main class="p-4" id="app-content">
+        </main>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchDay(1)" id="nav-day1">
+            <i class="fas fa-plane-arrival text-lg"></i>
+            <span>5/8</span>
+        </div>
+        <div class="nav-item" onclick="switchDay(2)" id="nav-day2">
+            <i class="fas fa-ticket-alt text-lg"></i>
+            <span>5/9</span>
+        </div>
+        <div class="nav-item" onclick="switchDay(3)" id="nav-day3">
+            <i class="fas fa-torii-gate text-lg"></i>
+            <span>5/10</span>
+        </div>
+        <div class="nav-item" onclick="switchDay(4)" id="nav-day4">
+            <i class="fas fa-leaf text-lg"></i>
+            <span>5/11</span>
+        </div>
+    </nav>
+
+    <script>
+        // 旅遊行程資料庫 (包含導遊分析、標籤與導航連結)
+        const itineraryData = {
+            1: {
+                title: "大阪購物與夜景", date: "5月8日", weather: "<i class='fas fa-sun text-yellow-500'></i> 22°C",
+                events: [
+                    { type: "transport", time: "11:00", title: "抵達關西國際機場", desc: "完成入境、領取行李與 ICOCA。<br>🚆 搭乘南海電鐵前往新今宮站 (約 45 分鐘)。", map: "https://maps.google.com/?q=Kansai+International+Airport", icon: "fa-plane" },
+                    { type: "spot", time: "16:30", title: "心齋橋筋商店街", desc: "大阪最大購物街，建議停留 1-1.5 小時。", tags: [{type: "buy", text: "必買伴手禮：Chiikawa 限定周邊、Tokyu Hands 小物"}], map: "https://maps.google.com/?q=Shinsaibashi+Shopping+Street", icon: "fa-shopping-bag" },
+                    { type: "spot", time: "18:00", title: "道頓堀", desc: "與固力果跑跑人合照，沿著道頓堀河岸散步。", story: "導遊小知識：固力果跑跑人看板自1935年設立，現在看到的是採用高畫質LED的第六代喔！夜間點燈後非常壯觀。", map: "https://maps.google.com/?q=Dotonbori", icon: "fa-camera" },
+                    { type: "food", time: "19:00", title: "晚餐：味乃家 或 くくる", desc: "道頓堀在地美食。", tags: [{type: "eat", text: "必吃美食：味乃家綜合大阪燒"}, {type: "eat", text: "必點菜單：くくる大粒章魚燒"}], map: "https://maps.google.com/?q=味乃家+本店", icon: "fa-utensils" },
+                    { type: "spot", time: "19:30", title: "唐吉訶德 Don Quijote", desc: "24小時營業的尋寶天堂，停留約 30 分鐘。", tags: [{type: "buy", text: "必買伴手禮：免稅藥妝、特色零食"}], map: "https://maps.google.com/?q=Don+Quijote+Dotonbori", icon: "fa-store" },
+                    { type: "spot", time: "20:30", title: "Bic Camera 難波店", desc: "選購電器，停留約 30-40 分鐘。", map: "https://maps.google.com/?q=Bic+Camera+Namba", icon: "fa-mobile-alt" },
+                    { type: "spot", time: "21:30", title: "日本橋動漫街", desc: "前往 Animate 大阪日本橋店，體驗關西的秋葉原文化。", map: "https://maps.google.com/?q=Nipponbashi+DenDenTown", icon: "fa-gamepad" }
+                ]
+            },
+            2: {
+                title: "USJ 環球影城", date: "5月9日", weather: "<i class='fas fa-cloud-sun text-gray-400'></i> 24°C",
+                events: [
+                    { type: "transport", time: "07:30", title: "前往 USJ", desc: "JR 環狀線：新今宮 → 西九條<br>JR 夢咲線：西九條 → 環球城站 (約 25 分)", map: "https://maps.google.com/?q=Universal+City+Station", icon: "fa-train" },
+                    { type: "spot", time: "08:00", title: "日本環球影城 入園", desc: "全日作戰開始！", tags: [{type: "code", text: "重要預約代號：USJ-APP-509"}], map: "https://maps.google.com/?q=Universal+Studios+Japan", icon: "fa-ticket-alt" },
+                    { type: "spot", time: "08:00", title: "哈利波特魔法世界", desc: "趁早晨人少時體驗禁忌之旅。", tags: [{type: "eat", text: "必點菜單：三把掃帚的奶油啤酒 (無酒精)"}], icon: "fa-hat-wizard" },
+                    { type: "spot", time: "10:00", title: "小小兵樂園", desc: "充滿黃色歡樂元素的園區。", icon: "fa-smile-beam" },
+                    { type: "spot", time: "12:00", title: "超級任天堂世界", desc: "進入瑪利歐的世界！", tags: [{type: "eat", text: "必吃美食：奇諾比奧咖啡店-磚塊提拉米蘇"}], story: "導遊小提醒：任天堂世界通常需要提前在官方 App 抽取『區域入場整理券』，入園後請盡快抽取。", icon: "fa-gamepad" },
+                    { type: "spot", time: "15:00", title: "柯南解謎", desc: "發揮智慧完成密室挑戰。", icon: "fa-search" },
+                    { type: "spot", time: "17:00", title: "飛天翼龍", desc: "侏羅紀公園區的極限挑戰。", icon: "fa-dragon" },
+                    { type: "spot", time: "19:00", title: "商店血拼與閉園", desc: "購買紀念品，結束完美的一天。", tags: [{type: "buy", text: "必買伴手禮：無敵星爆米花桶"}], icon: "fa-gifts" }
+                ]
+            },
+            3: {
+                title: "京都古典漫步", date: "5月10日", weather: "<i class='fas fa-cloud text-gray-400'></i> 20°C",
+                events: [
+                    { type: "transport", time: "09:00", title: "大阪前往京都", desc: "JR 環狀線：新今宮 → 大阪站<br>JR 京都線：大阪 → 京都站 (約 30 分)", map: "https://maps.google.com/?q=Kyoto+Station", icon: "fa-train" },
+                    { type: "transport", time: "10:30", title: "前往嵐山", desc: "JR 嵯峨野線：京都 → 嵯峨嵐山 (約 17 分)", map: "https://maps.google.com/?q=Saga-Arashiyama+Station", icon: "fa-train" },
+                    { type: "spot", time: "11:00", title: "嵐山竹林小徑 & 渡月橋", desc: "漫步竹林 (約30分)，欣賞渡月橋河景 (約15分)。", map: "https://maps.google.com/?q=Arashiyama+Bamboo+Forest", icon: "fa-leaf" },
+                    { type: "food", time: "12:30", title: "午餐：嵐山よしむら", desc: "一邊欣賞保津川美景，一邊享用精緻麵食。", tags: [{type: "eat", text: "必點菜單：手打冷蕎麥麵套餐"}], map: "https://maps.google.com/?q=Arashiyama+Yoshimura", icon: "fa-utensils" },
+                    { type: "spot", time: "14:30", title: "祇園 & 八坂神社", desc: "感受傳統花街風情，參拜八坂神社。", story: "導遊小知識：八坂神社是日本全國3,000多間八坂神社的總本社，這裡的『美容水』據說能讓皮膚變漂亮喔！", map: "https://maps.google.com/?q=Gion", icon: "fa-fan" },
+                    { type: "spot", time: "16:00", title: "清水寺", desc: "京都必訪世界遺產，停留約 1 小時。", tags: [{type: "buy", text: "必買伴手禮：清水燒、特色御守"}], story: "導遊小知識：著名的『清水舞台』完全沒有使用一根釘子，是日本傳統木造建築的極致展現。", map: "https://maps.google.com/?q=Kiyomizu-dera", icon: "fa-vihara" }
+                ]
+            },
+            4: {
+                title: "伏見稻荷與宇治茶香", date: "5月11日", weather: "<i class='fas fa-sun text-yellow-500'></i> 23°C",
+                events: [
+                    { type: "transport", time: "08:30", title: "京都站前往稻荷", desc: "JR 奈良線 (約 5 分)", map: "https://maps.google.com/?q=Inari+Station", icon: "fa-train" },
+                    { type: "spot", time: "08:40", title: "伏見稻荷大社", desc: "非常壯觀的千本鳥居，停留 1-1.5 小時。", tags: [{type: "buy", text: "必買伴手禮：狐狸造型繪馬"}], story: "導遊小知識：鳥居上的文字是捐贈者的名字或公司名。狐狸是稻荷大神的使者，嘴裡常叼著鑰匙或稻穗，象徵財富與豐收。", map: "https://maps.google.com/?q=Fushimi+Inari+Taisha", icon: "fa-torii-gate" },
+                    { type: "transport", time: "10:30", title: "稻荷前往宇治", desc: "JR 奈良線 (約 20 分)", map: "https://maps.google.com/?q=Uji+Station", icon: "fa-train" },
+                    { type: "spot", time: "11:00", title: "平等院", desc: "欣賞印在日本十圓硬幣上的美麗建築。", map: "https://maps.google.com/?q=Byodoin", icon: "fa-landmark" },
+                    { type: "food", time: "12:00", title: "中村藤吉本店", desc: "享受正宗宇治抹茶甜點。", tags: [{type: "eat", text: "必點菜單：生茶ゼリイ (用竹筒裝的抹茶生果凍)"}, {type: "buy", text: "必買伴手禮：頂級手採抹茶粉"}], map: "https://maps.google.com/?q=Nakamura+Tokichi+Honten", icon: "fa-mug-hot" },
+                    { type: "transport", time: "13:30", title: "前往關西機場", desc: "JR：宇治 → 天王寺<br>HARUKA 特急：天王寺 → 關西國際機場 (約 90 分)", map: "https://maps.google.com/?q=Kansai+International+Airport", icon: "fa-train" },
+                    { type: "transport", time: "15:30", title: "抵達機場", desc: "18:00 起飛。時間充裕，可在免稅店進行最後採購。", icon: "fa-plane-departure" }
+                ]
+            }
+        };
+
+        // 渲染畫面邏輯
+        function switchDay(day) {
+            // Update Active Tab
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-day${day}`).classList.add('active');
+
+            const data = itineraryData[day];
+            
+            // Update Header
+            document.getElementById('header-title').innerText = `Day ${day}：${data.title}`;
+            document.getElementById('header-date').innerText = data.date;
+            document.getElementById('header-weather').innerHTML = data.weather;
+
+            // Generate Content
+            let html = '';
+            data.events.forEach(event => {
+                let cardClass = event.type === 'transport' ? 'card-transport' : (event.type === 'food' ? 'card-food' : 'card-spot');
+                
+                let tagsHtml = '';
+                if (event.tags) {
+                    event.tags.forEach(tag => {
+                        let tagClass = tag.type === 'buy' ? 'tag-buy' : (tag.type === 'eat' ? 'tag-eat' : 'tag-code');
+                        tagsHtml += `<span class="tag ${tagClass}">${tag.text}</span>`;
+                    });
+                }
+
+                let storyHtml = event.story ? `<div class="story-box"><i class="fas fa-lightbulb text-pink-500 mr-1"></i> ${event.story}</div>` : '';
+                let navHtml = event.map ? `<a href="${event.map}" target="_blank" class="nav-btn"><i class="fas fa-location-arrow"></i> 開始導航</a>` : '';
+
+                html += `
+                    <div class="card ${cardClass}">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-[15px] flex items-center gap-2">
+                                <i class="fas ${event.icon} text-gray-400 w-4"></i>
+                                ${event.title}
+                            </h3>
+                            <span class="text-xs text-gray-400 font-bold">${event.time}</span>
+                        </div>
+                        <p class="text-[13px] text-gray-600 mb-2 leading-relaxed">${event.desc}</p>
+                        ${tagsHtml ? `<div class="mb-2">${tagsHtml}</div>` : ''}
+                        ${storyHtml}
+                        ${navHtml}
+                    </div>
+                `;
+            });
+
+            document.getElementById('app-content').innerHTML = html;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize Day 1
+        window.onload = () => switchDay(1);
+    </script>
+</body>
+</html>
