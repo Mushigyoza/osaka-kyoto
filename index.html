@@ -1,248 +1,1426 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>關西輕旅行手冊</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --sakura-light: #FFF5F7;
-            --sakura-main: #FFB8C6;
-            --sakura-dark: #D77A8C;
-            --text-main: #4A4A4A;
-        }
-        body {
-            background-color: var(--sakura-light);
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'PingFang TC', sans-serif;
-            color: var(--text-main);
-            -webkit-tap-highlight-color: transparent;
-            padding-bottom: 80px;
-        }
-        /* App UI Components */
-        .app-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            border-bottom: 1px solid rgba(255, 184, 198, 0.3);
-        }
-        .card {
-            background: #FFFFFF;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255, 184, 198, 0.2);
-            position: relative;
-        }
-        /* Card Types */
-        .card-transport { border-left: 4px solid #93C5FD; }
-        .card-spot { border-left: 4px solid var(--sakura-main); }
-        .card-food { border-left: 4px solid #FDBA74; }
-        
-        .nav-btn {
-            background: var(--sakura-dark);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            margin-top: 12px;
-        }
-        /* Highlight Tags */
-        .tag { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-right: 4px; display: inline-block; margin-bottom: 4px;}
-        .tag-buy { background: #FCE7F3; color: #BE185D; }
-        .tag-eat { background: #FFEDD5; color: #C2410C; }
-        .tag-code { background: #FEF9C3; color: #854D0E; font-family: monospace; font-size: 12px;}
-        .tag-weather { background: #F3F4F6; color: #4B5563; border-radius: 20px; padding: 4px 12px; font-size: 12px; }
-        
-        .story-box {
-            background: #FDF2F8;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 12px;
-            color: #831843;
-            margin: 8px 0;
-            line-height: 1.5;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>關西輕旅行手冊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   DESIGN TOKENS — Morandi palette
+══════════════════════════════════════════ */
+:root {
+  --bg:        #f9f7f4;
+  --card-bg:   #ffffff;
+  --aux-bg:    #f3f0eb;
+  --border:    rgba(180,164,144,0.22);
+  --border-s:  rgba(180,164,144,0.45);
+  --text:      #3d3830;
+  --text-mid:  #7a7268;
+  --text-faint:#aca59c;
+  --blue:      #8fa8b8;
+  --green:     #9aab98;
+  --purple:    #b09ba8;
+  --sand:      #b5a98a;
+  --red:       #c49090;
+  --bounce:    cubic-bezier(.34,1.56,.64,1);
+  --ease:      cubic-bezier(.4,0,.2,1);
+}
 
-        /* Bottom Nav */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
-            z-index: 100;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #9CA3AF;
-            font-size: 10px;
-            gap: 4px;
-        }
-        .nav-item.active {
-            color: var(--sakura-dark);
-            font-weight: bold;
-        }
-        
-        /* Tab Content */
-        .tab-pane { display: none; animation: fadeIn 0.3s ease; }
-        .tab-pane.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  background:var(--bg);
+  font-family:'M PLUS Rounded 1c','Noto Sans TC',sans-serif;
+  color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+  padding-bottom:96px;
+  min-height:100vh;
+}
+
+/* ── HEADER ── */
+.app-header{
+  background:rgba(249,247,244,0.94);
+  backdrop-filter:blur(14px);
+  position:sticky;top:0;z-index:60;
+  border-bottom:1.5px solid var(--border);
+  padding:12px 16px;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;
+}
+.header-left{flex:1;min-width:0;}
+.header-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.header-date{font-size:11px;color:var(--text-faint);margin-top:2px;font-weight:300;}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+
+.weather-badge{
+  background:var(--aux-bg);border:1.5px solid var(--border);
+  border-radius:999px;padding:4px 11px;
+  font-size:11px;color:var(--text-mid);
+  display:flex;align-items:center;gap:4px;font-weight:500;
+}
+
+/* edit-mode toggle btn */
+.edit-toggle-btn{
+  width:32px;height:32px;border-radius:999px;
+  background:transparent;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text-faint);
+  transition:all .2s var(--ease);
+}
+.edit-toggle-btn:hover{border-color:var(--purple);color:var(--purple);}
+.edit-toggle-btn.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+
+/* Notion sync btn */
+.notion-btn{
+  width:32px;height:32px;border-radius:999px;
+  background:transparent;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text-faint);
+  transition:all .2s var(--ease);
+  position:relative;
+}
+.notion-btn:hover{border-color:var(--blue);color:var(--blue);}
+.notion-btn.syncing svg{animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.notion-dot{
+  position:absolute;top:-2px;right:-2px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);border:2px solid var(--bg);
+  display:none;
+}
+.notion-btn.connected .notion-dot{display:block;}
+
+/* ── MAIN ── */
+main{padding:16px;max-width:600px;margin:0 auto;}
+
+/* section label */
+.section-label{
+  font-size:11px;color:var(--text-faint);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── CARDS ── */
+.card{
+  background:var(--card-bg);
+  border-radius:20px;padding:14px 16px;margin-bottom:12px;
+  border:1.5px solid var(--border);
+  position:relative;
+  transition:transform .3s var(--bounce),box-shadow .3s var(--ease),border-color .2s;
+  animation:cardIn .4s var(--bounce) both;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(61,56,48,.07);}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.card::before{
+  content:'';position:absolute;
+  left:0;top:14px;bottom:14px;
+  width:3px;border-radius:0 3px 3px 0;
+}
+.card-transport::before{background:var(--blue);}
+.card-spot::before     {background:var(--purple);}
+.card-food::before     {background:var(--sand);}
+
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:8px;}
+.card-title{font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;line-height:1.4;flex:1;min-width:0;}
+.card-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-transport .card-icon{background:rgba(143,168,184,.15);}
+.card-spot .card-icon     {background:rgba(176,155,168,.15);}
+.card-food .card-icon     {background:rgba(181,169,138,.15);}
+
+.card-time{font-size:10.5px;font-weight:500;color:var(--text-faint);background:var(--aux-bg);border-radius:999px;padding:2px 9px;white-space:nowrap;flex-shrink:0;}
+.card-desc{font-size:12px;color:var(--text-mid);line-height:1.7;font-weight:300;}
+
+/* tags */
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 3px;}
+.tag{padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:500;display:inline-flex;align-items:center;gap:3px;line-height:1;}
+.tag-buy  {background:rgba(176,155,168,.14);color:var(--purple);}
+.tag-eat  {background:rgba(181,169,138,.14);color:#8c7a56;}
+.tag-code {background:rgba(143,168,184,.14);color:var(--blue);font-family:monospace;font-size:11px;}
+
+/* story box */
+.story-box{
+  background:var(--aux-bg);border-radius:12px;
+  padding:9px 12px;font-size:11px;color:var(--text-mid);
+  margin:9px 0 3px;line-height:1.65;font-weight:300;
+  border:1.5px solid var(--border);
+  display:flex;gap:6px;
+}
+.story-icon{flex-shrink:0;margin-top:1px;}
+
+/* nav button */
+.nav-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:10px;padding:6px 14px;border-radius:999px;
+  font-size:11.5px;font-weight:500;
+  color:var(--blue);border:1.5px solid var(--blue);
+  background:transparent;text-decoration:none;
+  transition:background .2s var(--ease),color .2s var(--ease),transform .2s var(--bounce);cursor:pointer;
+}
+.nav-btn:hover{background:var(--blue);color:#fff;transform:translateY(-1px);}
+
+/* ── EDIT MODE card overlay ── */
+.edit-mode .card{border-color:rgba(176,155,168,.4);}
+.card-edit-bar{
+  display:none;
+  justify-content:flex-end;gap:6px;
+  margin-top:10px;padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.edit-mode .card-edit-bar{display:flex;}
+
+.edit-mode .card:hover{border-color:var(--purple);}
+
+.btn-sm{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:5px 11px;border-radius:999px;font-size:11px;font-weight:500;
+  cursor:pointer;border:1.5px solid;transition:all .2s var(--ease);
+  font-family:inherit;
+}
+.btn-edit{color:var(--blue);border-color:var(--blue);background:transparent;}
+.btn-edit:hover{background:var(--blue);color:#fff;}
+.btn-del{color:var(--red);border-color:var(--red);background:transparent;}
+.btn-del:hover{background:var(--red);color:#fff;}
+
+/* Add card button */
+.add-card-btn{
+  display:none;
+  width:100%;padding:12px;border-radius:20px;
+  background:transparent;border:1.5px dashed var(--border-s);
+  color:var(--text-faint);font-size:13px;font-weight:500;
+  cursor:pointer;align-items:center;justify-content:center;gap:7px;
+  transition:all .2s var(--ease);margin-bottom:12px;
+  font-family:inherit;
+}
+.edit-mode .add-card-btn{display:flex;}
+.add-card-btn:hover{border-color:var(--purple);color:var(--purple);background:rgba(176,155,168,.05);}
+
+/* Add day button */
+.add-day-btn{
+  display:none;
+  flex-direction:column;align-items:center;
+  color:var(--text-faint);font-size:9.5px;gap:3px;
+  cursor:pointer;padding:4px 8px;border-radius:999px;
+  transition:background .2s,color .2s;
+  border:none;background:transparent;font-family:inherit;
+}
+.edit-mode-global .add-day-btn{display:flex;}
+.add-day-btn:hover{color:var(--purple);background:rgba(176,155,168,.1);}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(14px);
+  border-top:1.5px solid var(--border);
+  display:flex;justify-content:space-around;align-items:center;
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+  z-index:100;overflow-x:auto;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;
+  color:var(--text-faint);font-size:9.5px;gap:3px;
+  cursor:pointer;padding:4px 10px;border-radius:999px;
+  transition:background .2s,color .2s,transform .25s var(--bounce);
+  user-select:none;white-space:nowrap;flex-shrink:0;
+  border:1.5px solid transparent;
+}
+.nav-item:active{transform:scale(.95);}
+.nav-item.active{color:var(--text);background:var(--aux-bg);border-color:var(--border);}
+.nav-item span{font-weight:500;}
+.nav-item-title{font-size:8px;color:var(--text-faint);max-width:48px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+.nav-item.active .nav-item-title{color:var(--text-mid);}
+
+/* ── MODALS ── */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(61,56,48,.35);backdrop-filter:blur(4px);
+  z-index:200;align-items:center;justify-content:center;
+  padding:16px;
+}
+.overlay.open{display:flex;}
+
+.modal{
+  background:var(--card-bg);border-radius:24px;
+  padding:24px 20px;width:100%;max-width:480px;
+  border:1.5px solid var(--border);
+  animation:modalIn .35s var(--bounce) both;
+  max-height:90vh;overflow-y:auto;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+
+.modal-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text-faint);padding:4px;border-radius:8px;}
+.modal-close:hover{color:var(--text);}
+
+/* Form fields */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--text-mid);margin-bottom:5px;letter-spacing:.04em;}
+.field input,.field textarea,.field select{
+  width:100%;padding:9px 12px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--aux-bg);
+  font-family:inherit;font-size:13px;color:var(--text);
+  outline:none;transition:border-color .2s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--purple);}
+.field textarea{resize:vertical;min-height:72px;line-height:1.6;}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* type selector */
+.type-select{display:flex;gap:7px;flex-wrap:wrap;}
+.type-opt{
+  padding:5px 12px;border-radius:999px;font-size:11.5px;font-weight:500;
+  cursor:pointer;border:1.5px solid var(--border);background:transparent;
+  transition:all .2s;color:var(--text-mid);font-family:inherit;
+}
+.type-opt.selected-transport{background:rgba(143,168,184,.2);border-color:var(--blue);color:var(--blue);}
+.type-opt.selected-spot    {background:rgba(176,155,168,.2);border-color:var(--purple);color:var(--purple);}
+.type-opt.selected-food    {background:rgba(181,169,138,.2);border-color:var(--sand);color:#8c7a56;}
+
+/* tags input */
+.tags-input-area{display:flex;flex-wrap:wrap;gap:5px;padding:8px;border-radius:12px;border:1.5px solid var(--border);background:var(--aux-bg);min-height:40px;align-items:center;cursor:text;}
+.tags-input-area .tag{cursor:pointer;}
+.tags-input-area .tag::after{content:'×';margin-left:4px;opacity:.6;}
+.tag-input-field{border:none;background:transparent;font-family:inherit;font-size:12px;color:var(--text);outline:none;min-width:80px;flex:1;}
+
+/* modal buttons */
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:14px;border-top:1px solid var(--border);}
+.btn-primary{
+  padding:8px 20px;border-radius:999px;font-size:13px;font-weight:500;
+  background:var(--purple);color:#fff;border:none;cursor:pointer;font-family:inherit;
+  transition:opacity .2s,transform .2s var(--bounce);
+}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-secondary{
+  padding:8px 16px;border-radius:999px;font-size:13px;font-weight:500;
+  background:transparent;color:var(--text-mid);border:1.5px solid var(--border);cursor:pointer;font-family:inherit;
+  transition:border-color .2s,color .2s;
+}
+.btn-secondary:hover{border-color:var(--text-mid);}
+
+/* ── SETTINGS PANEL ── */
+.settings-section{margin-bottom:20px;}
+.settings-section h3{font-size:12px;font-weight:700;color:var(--text-mid);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-label{font-size:13px;font-weight:500;}
+.settings-sub{font-size:11px;color:var(--text-faint);margin-top:2px;}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;}
+.status-dot.ok{background:var(--green);}
+.status-dot.err{background:var(--red);}
+.status-dot.idle{background:var(--text-faint);}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));
+  left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#f9f7f4;
+  padding:8px 18px;border-radius:999px;font-size:12px;font-weight:500;
+  z-index:500;opacity:0;transition:opacity .25s,transform .3s var(--bounce);
+  pointer-events:none;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* delete confirm */
+.confirm-modal{text-align:center;}
+.confirm-modal .modal-title{justify-content:center;font-size:14px;}
+.confirm-text{font-size:12.5px;color:var(--text-mid);margin-bottom:4px;}
+
+/* icon sizes */
+.icon   {width:15px;height:15px;stroke-width:1.6;flex-shrink:0;}
+.icon-lg{width:19px;height:19px;stroke-width:1.5;flex-shrink:0;}
+.icon-md{width:17px;height:17px;stroke-width:1.5;flex-shrink:0;}
+
+/* stagger */
+.card:nth-child(1){animation-delay:.04s}
+.card:nth-child(2){animation-delay:.08s}
+.card:nth-child(3){animation-delay:.12s}
+.card:nth-child(4){animation-delay:.16s}
+.card:nth-child(5){animation-delay:.20s}
+.card:nth-child(6){animation-delay:.24s}
+.card:nth-child(7){animation-delay:.28s}
+.card:nth-child(8){animation-delay:.32s}
+
+/* ── NOTION badge ── */
+.notion-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:999px;font-size:10px;font-weight:500;
+  background:rgba(154,171,152,.15);color:var(--green);
+  margin-left:6px;vertical-align:middle;
+}
+
+/* ── Responsive ── */
+@media(min-width:600px){
+  main{padding:28px 36px;}
+  .card{padding:18px 22px;}
+  .card-title{font-size:14.5px;}
+  .card-desc{font-size:12.5px;}
+  .header-title{font-size:16px;}
+}
+
+/* loading skeleton */
+.skeleton{background:linear-gradient(90deg,var(--aux-bg) 25%,rgba(243,240,235,.6) 50%,var(--aux-bg) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;height:14px;margin:4px 0;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
 </head>
 <body>
 
-    <header class="app-header p-4 flex justify-between items-center">
+<!-- ─── HEADER ─── -->
+<header class="app-header">
+  <div class="header-left">
+    <div class="header-title" id="header-title">Day 1：大阪購物與夜景</div>
+    <div class="header-date" id="header-date">5月8日</div>
+  </div>
+  <div class="header-right">
+    <div class="weather-badge" id="header-weather"></div>
+    <button class="notion-btn" id="notionSyncBtn" title="Notion 同步" onclick="handleNotionSync()">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z" rx="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9l6 6M9 15l6-6" stroke-linecap="round"/></svg>
+      <span class="notion-dot"></span>
+    </button>
+    <button class="edit-toggle-btn" id="editToggleBtn" title="編輯模式" onclick="toggleEditPrompt()">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="edit-toggle-btn" onclick="openSettings()" title="設定">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="app-content"></main>
+
+<!-- ─── BOTTOM NAV ─── -->
+<nav class="bottom-nav" id="bottom-nav"></nav>
+
+<!-- ══════════════════════════════════
+     MODALS
+══════════════════════════════════ -->
+
+<!-- Password / Edit Unlock -->
+<div class="overlay" id="passwordOverlay">
+  <div class="modal" style="max-width:340px;text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+    <div class="modal-title" style="justify-content:center;font-size:14px;">輸入編輯密碼</div>
+    <div class="field">
+      <input type="password" id="passwordInput" placeholder="••••••••" style="text-align:center;font-size:16px;letter-spacing:.2em;"
+        onkeydown="if(event.key==='Enter')checkPassword()">
+    </div>
+    <div id="passwordError" style="font-size:11px;color:var(--red);margin-bottom:10px;display:none;">密碼錯誤，請再試一次</div>
+    <div class="modal-footer" style="justify-content:center;border:none;margin:0;padding:0;">
+      <button class="btn-secondary" onclick="closeOverlay('passwordOverlay')">取消</button>
+      <button class="btn-primary" onclick="checkPassword()">解鎖</button>
+    </div>
+  </div>
+</div>
+
+<!-- Card Edit / Add Modal -->
+<div class="overlay" id="cardModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="cardModalTitle">新增行程</span>
+      <button class="modal-close" onclick="closeOverlay('cardModal')">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="field">
+      <label>類型</label>
+      <div class="type-select" id="typeSelect">
+        <button class="type-opt" data-type="transport" onclick="selectType('transport')">🚆 交通</button>
+        <button class="type-opt" data-type="spot"      onclick="selectType('spot')">📍 景點</button>
+        <button class="type-opt" data-type="food"      onclick="selectType('food')">🍜 餐食</button>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>時間</label>
+        <input type="time" id="fieldTime" value="10:00">
+      </div>
+      <div class="field">
+        <label>圖示</label>
+        <select id="fieldIcon">
+          <option value="plane">✈ 飛機</option>
+          <option value="train">🚆 列車</option>
+          <option value="bag">🛍 購物袋</option>
+          <option value="camera">📷 相機</option>
+          <option value="fork">🍴 餐具</option>
+          <option value="store">🏠 商店</option>
+          <option value="phone">📱 手機</option>
+          <option value="game">🎮 遊戲</option>
+          <option value="wand">🪄 魔法杖</option>
+          <option value="smile">😊 笑臉</option>
+          <option value="star">⭐ 星星</option>
+          <option value="search">🔍 搜尋</option>
+          <option value="gift">🎁 禮物</option>
+          <option value="leaf">🍃 葉子</option>
+          <option value="temple">🏯 神社</option>
+          <option value="torii">⛩ 鳥居</option>
+          <option value="landmark">🏛 建築</option>
+          <option value="cup">☕ 杯子</option>
+          <option value="plane-dep">🛫 起飛</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>標題</label>
+      <input type="text" id="fieldTitle" placeholder="例：嵐山竹林小徑">
+    </div>
+
+    <div class="field">
+      <label>說明</label>
+      <textarea id="fieldDesc" placeholder="行程描述，可使用 &lt;br&gt; 換行"></textarea>
+    </div>
+
+    <div class="field">
+      <label>標籤 <span style="color:var(--text-faint);font-weight:300">（輸入後按 Enter 新增；點擊標籤可刪除）</span></label>
+      <div class="tags-input-area" id="tagsArea" onclick="document.getElementById('tagInputField').focus()"></div>
+      <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+        <select id="tagTypeSelect" style="padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--aux-bg);font-family:inherit;font-size:11px;color:var(--text-mid);">
+          <option value="buy">🛍 必買</option>
+          <option value="eat">🍴 必吃</option>
+          <option value="code">📋 代號</option>
+        </select>
+        <input id="tagInputField" class="tag-input-field" placeholder="輸入標籤文字後按 Enter"
+          style="flex:1;padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--aux-bg);"
+          onkeydown="handleTagInput(event)">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>導遊小知識 <span style="color:var(--text-faint);font-weight:300">（選填）</span></label>
+      <textarea id="fieldStory" placeholder="小知識或提醒..." style="min-height:56px;"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Google Maps 連結 <span style="color:var(--text-faint);font-weight:300">（選填）</span></label>
+      <input type="url" id="fieldMap" placeholder="https://maps.google.com/?q=...">
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeOverlay('cardModal')">取消</button>
+      <button class="btn-primary" id="cardModalSaveBtn" onclick="saveCard()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="overlay" id="deleteModal">
+  <div class="modal confirm-modal" style="max-width:320px;">
+    <div style="font-size:28px;margin-bottom:8px;">🗑</div>
+    <div class="modal-title">確定要刪除？</div>
+    <p class="confirm-text" id="deleteConfirmText">刪除後無法還原。</p>
+    <div class="modal-footer" style="justify-content:center;border:none;margin:0;">
+      <button class="btn-secondary" onclick="closeOverlay('deleteModal')">取消</button>
+      <button class="btn-primary" style="background:var(--red);" onclick="confirmDelete()">刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Day Modal -->
+<div class="overlay" id="addDayModal">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-title">
+      <span>新增旅遊日</span>
+      <button class="modal-close" onclick="closeOverlay('addDayModal')">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>月份</label>
+        <input type="number" id="newDayMonth" min="1" max="12" placeholder="5">
+      </div>
+      <div class="field">
+        <label>日期</label>
+        <input type="number" id="newDayDate" min="1" max="31" placeholder="12">
+      </div>
+    </div>
+    <div class="field">
+      <label>標題</label>
+      <input type="text" id="newDayTitle" placeholder="例：神戶一日遊">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>天氣圖示</label>
+        <select id="newDayWeatherIcon">
+          <option value="sunny">☀️ 晴天</option>
+          <option value="cloudy">⛅ 多雲</option>
+          <option value="cloud">☁️ 陰天</option>
+          <option value="rain">🌧 雨天</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>氣溫</label>
+        <input type="text" id="newDayTemp" placeholder="22°C">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeOverlay('addDayModal')">取消</button>
+      <button class="btn-primary" onclick="saveNewDay()">新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>設定</span>
+      <button class="modal-close" onclick="closeOverlay('settingsModal')">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="settings-section">
+      <h3>🔐 編輯權限</h3>
+      <div class="settings-row">
         <div>
-            <h1 class="text-lg font-bold tracking-wider text-gray-800" id="header-title">Day 1：大阪購物與夜景</h1>
-            <p class="text-xs text-gray-500 mt-1" id="header-date">5月8日</p>
+          <div class="settings-label">編輯密碼</div>
+          <div class="settings-sub">設定後才能進入編輯模式</div>
         </div>
-        <div class="tag-weather" id="header-weather">
-            <i class="fas fa-sun text-yellow-500"></i> 22°C
+        <button class="btn-sm btn-edit" onclick="changePassword()">修改</button>
+      </div>
+      <div class="settings-row" id="editStatusRow">
+        <div>
+          <div class="settings-label">目前狀態</div>
+          <div class="settings-sub" id="editStatusText">未解鎖</div>
         </div>
-    </header>
+        <button class="btn-sm btn-del" id="lockBtn" onclick="lockEditMode()" style="display:none;">鎖定</button>
+      </div>
+    </div>
 
-    <main class="p-4" id="app-content">
-        </main>
-
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchDay(1)" id="nav-day1">
-            <i class="fas fa-plane-arrival text-lg"></i>
-            <span>5/8</span>
+    <div class="settings-section">
+      <h3>📓 Notion 整合</h3>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Cloudflare Worker URL</div>
+          <div class="settings-sub" id="cfWorkerStatus">尚未設定</div>
         </div>
-        <div class="nav-item" onclick="switchDay(2)" id="nav-day2">
-            <i class="fas fa-ticket-alt text-lg"></i>
-            <span>5/9</span>
+        <button class="btn-sm btn-edit" onclick="setCFWorker()">設定</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Notion Database ID</div>
+          <div class="settings-sub" id="notionDbStatus">尚未設定</div>
         </div>
-        <div class="nav-item" onclick="switchDay(3)" id="nav-day3">
-            <i class="fas fa-torii-gate text-lg"></i>
-            <span>5/10</span>
+        <button class="btn-sm btn-edit" onclick="setNotionDb()">設定</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Notion Integration Token</div>
+          <div class="settings-sub" id="notionTokenStatus">尚未設定</div>
         </div>
-        <div class="nav-item" onclick="switchDay(4)" id="nav-day4">
-            <i class="fas fa-leaf text-lg"></i>
-            <span>5/11</span>
+        <button class="btn-sm btn-edit" onclick="setNotionToken()">設定</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">連線狀態</div>
+          <div class="settings-sub" id="notionConnStatus">
+            <span class="status-dot idle"></span>未測試
+          </div>
         </div>
-    </nav>
+        <button class="btn-sm btn-edit" onclick="testNotion()">測試</button>
+      </div>
+    </div>
 
-    <script>
-        // 旅遊行程資料庫 (包含導遊分析、標籤與導航連結)
-        const itineraryData = {
-            1: {
-                title: "大阪購物與夜景", date: "5月8日", weather: "<i class='fas fa-sun text-yellow-500'></i> 22°C",
-                events: [
-                    { type: "transport", time: "11:00", title: "抵達關西國際機場", desc: "完成入境、領取行李與 ICOCA。<br>🚆 搭乘南海電鐵前往新今宮站 (約 45 分鐘)。", map: "https://maps.google.com/?q=Kansai+International+Airport", icon: "fa-plane" },
-                    { type: "spot", time: "16:30", title: "心齋橋筋商店街", desc: "大阪最大購物街，建議停留 1-1.5 小時。", tags: [{type: "buy", text: "必買伴手禮：Chiikawa 限定周邊、Tokyu Hands 小物"}], map: "https://maps.google.com/?q=Shinsaibashi+Shopping+Street", icon: "fa-shopping-bag" },
-                    { type: "spot", time: "18:00", title: "道頓堀", desc: "與固力果跑跑人合照，沿著道頓堀河岸散步。", story: "導遊小知識：固力果跑跑人看板自1935年設立，現在看到的是採用高畫質LED的第六代喔！夜間點燈後非常壯觀。", map: "https://maps.google.com/?q=Dotonbori", icon: "fa-camera" },
-                    { type: "food", time: "19:00", title: "晚餐：味乃家 或 くくる", desc: "道頓堀在地美食。", tags: [{type: "eat", text: "必吃美食：味乃家綜合大阪燒"}, {type: "eat", text: "必點菜單：くくる大粒章魚燒"}], map: "https://maps.google.com/?q=味乃家+本店", icon: "fa-utensils" },
-                    { type: "spot", time: "19:30", title: "唐吉訶德 Don Quijote", desc: "24小時營業的尋寶天堂，停留約 30 分鐘。", tags: [{type: "buy", text: "必買伴手禮：免稅藥妝、特色零食"}], map: "https://maps.google.com/?q=Don+Quijote+Dotonbori", icon: "fa-store" },
-                    { type: "spot", time: "20:30", title: "Bic Camera 難波店", desc: "選購電器，停留約 30-40 分鐘。", map: "https://maps.google.com/?q=Bic+Camera+Namba", icon: "fa-mobile-alt" },
-                    { type: "spot", time: "21:30", title: "日本橋動漫街", desc: "前往 Animate 大阪日本橋店，體驗關西的秋葉原文化。", map: "https://maps.google.com/?q=Nipponbashi+DenDenTown", icon: "fa-gamepad" }
-                ]
-            },
-            2: {
-                title: "USJ 環球影城", date: "5月9日", weather: "<i class='fas fa-cloud-sun text-gray-400'></i> 24°C",
-                events: [
-                    { type: "transport", time: "07:30", title: "前往 USJ", desc: "JR 環狀線：新今宮 → 西九條<br>JR 夢咲線：西九條 → 環球城站 (約 25 分)", map: "https://maps.google.com/?q=Universal+City+Station", icon: "fa-train" },
-                    { type: "spot", time: "08:00", title: "日本環球影城 入園", desc: "全日作戰開始！", tags: [{type: "code", text: "重要預約代號：USJ-APP-509"}], map: "https://maps.google.com/?q=Universal+Studios+Japan", icon: "fa-ticket-alt" },
-                    { type: "spot", time: "08:00", title: "哈利波特魔法世界", desc: "趁早晨人少時體驗禁忌之旅。", tags: [{type: "eat", text: "必點菜單：三把掃帚的奶油啤酒 (無酒精)"}], icon: "fa-hat-wizard" },
-                    { type: "spot", time: "10:00", title: "小小兵樂園", desc: "充滿黃色歡樂元素的園區。", icon: "fa-smile-beam" },
-                    { type: "spot", time: "12:00", title: "超級任天堂世界", desc: "進入瑪利歐的世界！", tags: [{type: "eat", text: "必吃美食：奇諾比奧咖啡店-磚塊提拉米蘇"}], story: "導遊小提醒：任天堂世界通常需要提前在官方 App 抽取『區域入場整理券』，入園後請盡快抽取。", icon: "fa-gamepad" },
-                    { type: "spot", time: "15:00", title: "柯南解謎", desc: "發揮智慧完成密室挑戰。", icon: "fa-search" },
-                    { type: "spot", time: "17:00", title: "飛天翼龍", desc: "侏羅紀公園區的極限挑戰。", icon: "fa-dragon" },
-                    { type: "spot", time: "19:00", title: "商店血拼與閉園", desc: "購買紀念品，結束完美的一天。", tags: [{type: "buy", text: "必買伴手禮：無敵星爆米花桶"}], icon: "fa-gifts" }
-                ]
-            },
-            3: {
-                title: "京都古典漫步", date: "5月10日", weather: "<i class='fas fa-cloud text-gray-400'></i> 20°C",
-                events: [
-                    { type: "transport", time: "09:00", title: "大阪前往京都", desc: "JR 環狀線：新今宮 → 大阪站<br>JR 京都線：大阪 → 京都站 (約 30 分)", map: "https://maps.google.com/?q=Kyoto+Station", icon: "fa-train" },
-                    { type: "transport", time: "10:30", title: "前往嵐山", desc: "JR 嵯峨野線：京都 → 嵯峨嵐山 (約 17 分)", map: "https://maps.google.com/?q=Saga-Arashiyama+Station", icon: "fa-train" },
-                    { type: "spot", time: "11:00", title: "嵐山竹林小徑 & 渡月橋", desc: "漫步竹林 (約30分)，欣賞渡月橋河景 (約15分)。", map: "https://maps.google.com/?q=Arashiyama+Bamboo+Forest", icon: "fa-leaf" },
-                    { type: "food", time: "12:30", title: "午餐：嵐山よしむら", desc: "一邊欣賞保津川美景，一邊享用精緻麵食。", tags: [{type: "eat", text: "必點菜單：手打冷蕎麥麵套餐"}], map: "https://maps.google.com/?q=Arashiyama+Yoshimura", icon: "fa-utensils" },
-                    { type: "spot", time: "14:30", title: "祇園 & 八坂神社", desc: "感受傳統花街風情，參拜八坂神社。", story: "導遊小知識：八坂神社是日本全國3,000多間八坂神社的總本社，這裡的『美容水』據說能讓皮膚變漂亮喔！", map: "https://maps.google.com/?q=Gion", icon: "fa-fan" },
-                    { type: "spot", time: "16:00", title: "清水寺", desc: "京都必訪世界遺產，停留約 1 小時。", tags: [{type: "buy", text: "必買伴手禮：清水燒、特色御守"}], story: "導遊小知識：著名的『清水舞台』完全沒有使用一根釘子，是日本傳統木造建築的極致展現。", map: "https://maps.google.com/?q=Kiyomizu-dera", icon: "fa-vihara" }
-                ]
-            },
-            4: {
-                title: "伏見稻荷與宇治茶香", date: "5月11日", weather: "<i class='fas fa-sun text-yellow-500'></i> 23°C",
-                events: [
-                    { type: "transport", time: "08:30", title: "京都站前往稻荷", desc: "JR 奈良線 (約 5 分)", map: "https://maps.google.com/?q=Inari+Station", icon: "fa-train" },
-                    { type: "spot", time: "08:40", title: "伏見稻荷大社", desc: "非常壯觀的千本鳥居，停留 1-1.5 小時。", tags: [{type: "buy", text: "必買伴手禮：狐狸造型繪馬"}], story: "導遊小知識：鳥居上的文字是捐贈者的名字或公司名。狐狸是稻荷大神的使者，嘴裡常叼著鑰匙或稻穗，象徵財富與豐收。", map: "https://maps.google.com/?q=Fushimi+Inari+Taisha", icon: "fa-torii-gate" },
-                    { type: "transport", time: "10:30", title: "稻荷前往宇治", desc: "JR 奈良線 (約 20 分)", map: "https://maps.google.com/?q=Uji+Station", icon: "fa-train" },
-                    { type: "spot", time: "11:00", title: "平等院", desc: "欣賞印在日本十圓硬幣上的美麗建築。", map: "https://maps.google.com/?q=Byodoin", icon: "fa-landmark" },
-                    { type: "food", time: "12:00", title: "中村藤吉本店", desc: "享受正宗宇治抹茶甜點。", tags: [{type: "eat", text: "必點菜單：生茶ゼリイ (用竹筒裝的抹茶生果凍)"}, {type: "buy", text: "必買伴手禮：頂級手採抹茶粉"}], map: "https://maps.google.com/?q=Nakamura+Tokichi+Honten", icon: "fa-mug-hot" },
-                    { type: "transport", time: "13:30", title: "前往關西機場", desc: "JR：宇治 → 天王寺<br>HARUKA 特急：天王寺 → 關西國際機場 (約 90 分)", map: "https://maps.google.com/?q=Kansai+International+Airport", icon: "fa-train" },
-                    { type: "transport", time: "15:30", title: "抵達機場", desc: "18:00 起飛。時間充裕，可在免稅店進行最後採購。", icon: "fa-plane-departure" }
-                ]
-            }
-        };
+    <div class="settings-section">
+      <h3>💾 資料管理</h3>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">匯出 JSON</div>
+          <div class="settings-sub">下載目前行程資料</div>
+        </div>
+        <button class="btn-sm btn-edit" onclick="exportData()">匯出</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">匯入 JSON</div>
+          <div class="settings-sub">從備份還原行程</div>
+        </div>
+        <button class="btn-sm btn-edit" onclick="document.getElementById('importFile').click()">匯入</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">重設為預設行程</div>
+          <div class="settings-sub">清除所有修改（無法還原）</div>
+        </div>
+        <button class="btn-sm btn-del" onclick="resetData()">重設</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        // 渲染畫面邏輯
-        function switchDay(day) {
-            // Update Active Tab
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`nav-day${day}`).classList.add('active');
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-            const data = itineraryData[day];
-            
-            // Update Header
-            document.getElementById('header-title').innerText = `Day ${day}：${data.title}`;
-            document.getElementById('header-date').innerText = data.date;
-            document.getElementById('header-weather').innerHTML = data.weather;
+<!-- ══════════════════════════════════
+     SCRIPTS
+══════════════════════════════════ -->
+<script>
+/* ─── SVG Icons ─── */
+const ICONS = {
+  plane:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  train:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="13" rx="4"/><path d="M8 19l-2 2M16 19l2 2M8 16v3M16 16v3M8 10h8" stroke-linecap="round"/><circle cx="8.5" cy="7" r="1" fill="currentColor"/><circle cx="15.5" cy="7" r="1" fill="currentColor"/></svg>`,
+  bag:       `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke-linecap="round"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+  camera:    `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+  fork:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v7m0 0a2 2 0 0 0 2-2V2M12 9a2 2 0 0 1-2-2V2M12 9v13" stroke-linecap="round"/><path d="M19 2v4a3 3 0 0 1-3 3v13" stroke-linecap="round"/></svg>`,
+  store:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  phone:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-linecap="round" stroke-width="2"/></svg>`,
+  game:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="13" rx="4"/><path d="M12 2v5M9 9h6M8 13h2m2 0h2M11 12v2" stroke-linecap="round"/></svg>`,
+  wand:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 4V2M15 16v-2M8 9H6M14 9h-2M11.2 6.2l-1.4-1.4M13.4 11.4l1.4 1.4M6.2 12.8l-1.4 1.4M11.4 8.6l1.4-1.4M3 21L13 11" stroke-linecap="round"/></svg>`,
+  smile:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-linecap="round" stroke-width="2"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-linecap="round" stroke-width="2"/></svg>`,
+  star:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  search:    `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg>`,
+  dragon:    `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2C7 2 4 6 4 10c0 3 1.5 5.5 4 7l-1 3 4-1c1 .3 2 .5 3 .5C18.5 19.5 22 16 22 12c0-5.5-4-10-10-10z"/></svg>`,
+  gift:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>`,
+  leaf:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.5c2.12-.55 4.28-1.33 5.68-2.5 1.6-1.33 2-3.5 4-5 .5 3-1 5.5-4 7 5 0 10-4 11-9s-4-9-8-9c-3 0-5 1-6 3 4-1 8 0 11 4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  temple:    `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M5 21V9l7-7 7 7v12M9 21V15h6v6M12 9v3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  torii:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 8h18M6 5h12M8 8v11M16 8v11M10 12h4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  landmark:  `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7 12 2"/></svg>`,
+  cup:       `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>`,
+  'plane-dep':`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 20h20M17 4L22 9l-5 5M22 9H9a5 5 0 0 0-5 5v2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  bulb:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.4-1.3 4.7-3.3 6.1-.5.4-.7.9-.7 1.4V17H9v-.5c0-.5-.2-1-.7-1.4A7 7 0 0 1 5 9a7 7 0 0 1 7-7z"/></svg>`,
+  nav:       `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`,
+  plus:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke-linecap="round"/></svg>`,
+  edit2:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round"/></svg>`,
+  trash:     `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-linecap="round"/></svg>`,
+  sync:      `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round"/></svg>`,
+};
 
-            // Generate Content
-            let html = '';
-            data.events.forEach(event => {
-                let cardClass = event.type === 'transport' ? 'card-transport' : (event.type === 'food' ? 'card-food' : 'card-spot');
-                
-                let tagsHtml = '';
-                if (event.tags) {
-                    event.tags.forEach(tag => {
-                        let tagClass = tag.type === 'buy' ? 'tag-buy' : (tag.type === 'eat' ? 'tag-eat' : 'tag-code');
-                        tagsHtml += `<span class="tag ${tagClass}">${tag.text}</span>`;
-                    });
-                }
+const WEATHER_SVG = {
+  sunny: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b5a98a" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke-linecap="round"/></svg>`,
+  cloudy:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aca59c" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`,
+  cloud: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aca59c" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`,
+  rain:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8fa8b8" stroke-width="2"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="19" x2="8" y2="21"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="16" y1="19" x2="16" y2="21"/><line x1="16" y1="13" x2="16" y2="15"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="12" y1="15" x2="12" y2="17"/></svg>`,
+};
 
-                let storyHtml = event.story ? `<div class="story-box"><i class="fas fa-lightbulb text-pink-500 mr-1"></i> ${event.story}</div>` : '';
-                let navHtml = event.map ? `<a href="${event.map}" target="_blank" class="nav-btn"><i class="fas fa-location-arrow"></i> 開始導航</a>` : '';
+/* ─── DEFAULT DATA ─── */
+const DEFAULT_DATA = {
+  1:{title:"大阪購物與夜景",date:"5月8日",weather:{icon:"sunny",temp:"22°C"},events:[
+    {id:"e1-1",type:"transport",time:"11:00",icon:"plane",title:"抵達關西國際機場",desc:"完成入境、領取行李與 ICOCA。<br>搭乘南海電鐵前往新今宮站（約 45 分鐘）。",map:"https://maps.google.com/?q=Kansai+International+Airport"},
+    {id:"e1-2",type:"spot",time:"16:30",icon:"bag",title:"心齋橋筋商店街",desc:"大阪最大購物街，建議停留 1–1.5 小時。",tags:[{type:"buy",text:"Chiikawa 限定周邊、Tokyu Hands 小物"}],map:"https://maps.google.com/?q=Shinsaibashi+Shopping+Street"},
+    {id:"e1-3",type:"spot",time:"18:00",icon:"camera",title:"道頓堀",desc:"與固力果跑跑人合照，沿著道頓堀河岸散步。",story:"固力果跑跑人看板自 1935 年設立，現在的是採用高畫質 LED 的第六代。夜間點燈後非常壯觀。",map:"https://maps.google.com/?q=Dotonbori"},
+    {id:"e1-4",type:"food",time:"19:00",icon:"fork",title:"晚餐：味乃家 或 くくる",desc:"道頓堀在地美食。",tags:[{type:"eat",text:"味乃家綜合大阪燒"},{type:"eat",text:"くくる大粒章魚燒"}],map:"https://maps.google.com/?q=味乃家+本店"},
+    {id:"e1-5",type:"spot",time:"19:30",icon:"store",title:"唐吉訶德 Don Quijote",desc:"24小時營業的尋寶天堂，停留約 30 分鐘。",tags:[{type:"buy",text:"免稅藥妝、特色零食"}],map:"https://maps.google.com/?q=Don+Quijote+Dotonbori"},
+    {id:"e1-6",type:"spot",time:"20:30",icon:"phone",title:"Bic Camera 難波店",desc:"選購電器，停留約 30–40 分鐘。",map:"https://maps.google.com/?q=Bic+Camera+Namba"},
+    {id:"e1-7",type:"spot",time:"21:30",icon:"game",title:"日本橋動漫街",desc:"前往 Animate 大阪日本橋店，體驗關西的秋葉原文化。",map:"https://maps.google.com/?q=Nipponbashi+DenDenTown"},
+  ]},
+  2:{title:"USJ 環球影城",date:"5月9日",weather:{icon:"cloudy",temp:"24°C"},events:[
+    {id:"e2-1",type:"transport",time:"07:30",icon:"train",title:"前往 USJ",desc:"JR 環狀線：新今宮 → 西九條<br>JR 夢咲線：西九條 → 環球城站（約 25 分）",map:"https://maps.google.com/?q=Universal+City+Station"},
+    {id:"e2-2",type:"spot",time:"08:00",icon:"star",title:"日本環球影城 入園",desc:"全日作戰開始！",tags:[{type:"code",text:"預約代號：USJ-APP-509"}],map:"https://maps.google.com/?q=Universal+Studios+Japan"},
+    {id:"e2-3",type:"spot",time:"08:00",icon:"wand",title:"哈利波特魔法世界",desc:"趁早晨人少時體驗禁忌之旅。",tags:[{type:"eat",text:"三把掃帚的奶油啤酒（無酒精）"}]},
+    {id:"e2-4",type:"spot",time:"10:00",icon:"smile",title:"小小兵樂園",desc:"充滿黃色歡樂元素的園區。"},
+    {id:"e2-5",type:"spot",time:"12:00",icon:"game",title:"超級任天堂世界",desc:"進入瑪利歐的世界！",tags:[{type:"eat",text:"奇諾比奧咖啡店-磚塊提拉米蘇"}],story:"任天堂世界通常需要提前在官方 App 抽取「區域入場整理券」，入園後請盡快抽取。"},
+    {id:"e2-6",type:"spot",time:"15:00",icon:"search",title:"柯南解謎",desc:"發揮智慧完成密室挑戰。"},
+    {id:"e2-7",type:"spot",time:"17:00",icon:"dragon",title:"飛天翼龍",desc:"侏羅紀公園區的極限挑戰。"},
+    {id:"e2-8",type:"spot",time:"19:00",icon:"gift",title:"商店血拼與閉園",desc:"購買紀念品，結束完美的一天。",tags:[{type:"buy",text:"無敵星爆米花桶"}]},
+  ]},
+  3:{title:"京都古典漫步",date:"5月10日",weather:{icon:"cloud",temp:"20°C"},events:[
+    {id:"e3-1",type:"transport",time:"09:00",icon:"train",title:"大阪前往京都",desc:"JR 環狀線：新今宮 → 大阪站<br>JR 京都線：大阪 → 京都站（約 30 分）",map:"https://maps.google.com/?q=Kyoto+Station"},
+    {id:"e3-2",type:"transport",time:"10:30",icon:"train",title:"前往嵐山",desc:"JR 嵯峨野線：京都 → 嵯峨嵐山（約 17 分）",map:"https://maps.google.com/?q=Saga-Arashiyama+Station"},
+    {id:"e3-3",type:"spot",time:"11:00",icon:"leaf",title:"嵐山竹林小徑 & 渡月橋",desc:"漫步竹林（約30分），欣賞渡月橋河景（約15分）。",map:"https://maps.google.com/?q=Arashiyama+Bamboo+Forest"},
+    {id:"e3-4",type:"food",time:"12:30",icon:"fork",title:"午餐：嵐山よしむら",desc:"一邊欣賞保津川美景，一邊享用精緻麵食。",tags:[{type:"eat",text:"手打冷蕎麥麵套餐"}],map:"https://maps.google.com/?q=Arashiyama+Yoshimura"},
+    {id:"e3-5",type:"spot",time:"14:30",icon:"torii",title:"祇園 & 八坂神社",desc:"感受傳統花街風情，參拜八坂神社。",story:"八坂神社是日本全國 3,000 多間八坂神社的總本社，這裡的「美容水」據說能讓皮膚變漂亮喔！",map:"https://maps.google.com/?q=Gion"},
+    {id:"e3-6",type:"spot",time:"16:00",icon:"temple",title:"清水寺",desc:"京都必訪世界遺產，停留約 1 小時。",tags:[{type:"buy",text:"清水燒、特色御守"}],story:"著名的「清水舞台」完全沒有使用一根釘子，是日本傳統木造建築的極致展現。",map:"https://maps.google.com/?q=Kiyomizu-dera"},
+  ]},
+  4:{title:"伏見稻荷與宇治茶香",date:"5月11日",weather:{icon:"sunny",temp:"23°C"},events:[
+    {id:"e4-1",type:"transport",time:"08:30",icon:"train",title:"京都站前往稻荷",desc:"JR 奈良線（約 5 分）",map:"https://maps.google.com/?q=Inari+Station"},
+    {id:"e4-2",type:"spot",time:"08:40",icon:"torii",title:"伏見稻荷大社",desc:"非常壯觀的千本鳥居，停留 1–1.5 小時。",tags:[{type:"buy",text:"狐狸造型繪馬"}],story:"鳥居上的文字是捐贈者的名字或公司名。狐狸是稻荷大神的使者，嘴裡常叼著鑰匙或稻穗，象徵財富與豐收。",map:"https://maps.google.com/?q=Fushimi+Inari+Taisha"},
+    {id:"e4-3",type:"transport",time:"10:30",icon:"train",title:"稻荷前往宇治",desc:"JR 奈良線（約 20 分）",map:"https://maps.google.com/?q=Uji+Station"},
+    {id:"e4-4",type:"spot",time:"11:00",icon:"landmark",title:"平等院",desc:"欣賞印在日本十圓硬幣上的美麗建築。",map:"https://maps.google.com/?q=Byodoin"},
+    {id:"e4-5",type:"food",time:"12:00",icon:"cup",title:"中村藤吉本店",desc:"享受正宗宇治抹茶甜點。",tags:[{type:"eat",text:"生茶ゼリイ（竹筒裝抹茶生果凍）"},{type:"buy",text:"頂級手採抹茶粉"}],map:"https://maps.google.com/?q=Nakamura+Tokichi+Honten"},
+    {id:"e4-6",type:"transport",time:"13:30",icon:"train",title:"前往關西機場",desc:"JR：宇治 → 天王寺<br>HARUKA 特急：天王寺 → 關西國際機場（約 90 分）",map:"https://maps.google.com/?q=Kansai+International+Airport"},
+    {id:"e4-7",type:"transport",time:"15:30",icon:"plane-dep",title:"抵達機場 · 18:00 起飛",desc:"時間充裕，可在免稅店進行最後採購。"},
+  ]},
+};
 
-                html += `
-                    <div class="card ${cardClass}">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-[15px] flex items-center gap-2">
-                                <i class="fas ${event.icon} text-gray-400 w-4"></i>
-                                ${event.title}
-                            </h3>
-                            <span class="text-xs text-gray-400 font-bold">${event.time}</span>
-                        </div>
-                        <p class="text-[13px] text-gray-600 mb-2 leading-relaxed">${event.desc}</p>
-                        ${tagsHtml ? `<div class="mb-2">${tagsHtml}</div>` : ''}
-                        ${storyHtml}
-                        ${navHtml}
-                    </div>
-                `;
-            });
+/* ─── STATE ─── */
+let itineraryData = {};
+let currentDay = 1;
+let editMode = false;
+let isAuthenticated = false;
 
-            document.getElementById('app-content').innerHTML = html;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+// pending card operation
+let pendingEditId = null;  // eventId or null (=add)
+let pendingDeleteId = null;
+let pendingDeleteDay = null;
+let editTags = [];
+let selectedType = 'spot';
 
-        // Initialize Day 1
-        window.onload = () => switchDay(1);
-    </script>
+/* ─── INIT ─── */
+function init() {
+  loadData();
+  renderNav();
+  switchDay(1);
+  updateSettingsUI();
+}
+
+function loadData() {
+  const saved = localStorage.getItem('kansai_itinerary');
+  itineraryData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function saveData() {
+  localStorage.setItem('kansai_itinerary', JSON.stringify(itineraryData));
+}
+
+/* ─── NAV ─── */
+function renderNav() {
+  const nav = document.getElementById('bottom-nav');
+  const days = Object.keys(itineraryData).map(Number).sort((a,b)=>a-b);
+  const navIcons = {
+    plane:'<svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    star:'<svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    torii:'<svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 8h18M6 5h12M8 8v11M16 8v11M10 12h4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    leaf:'<svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 19.5c2.12-.55 4.28-1.33 5.68-2.5 1.6-1.33 2-3.5 4-5 .5 3-1 5.5-4 7 5 0 10-4 11-9s-4-9-8-9c-3 0-5 1-6 3 4-1 8 0 11 4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    generic:'<svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3" stroke-linecap="round"/></svg>',
+  };
+  const iconArr = [navIcons.plane, navIcons.star, navIcons.torii, navIcons.leaf];
+
+  let html = days.map((d,i) => {
+    const dayData = itineraryData[d];
+    return `<div class="nav-item ${d===currentDay?'active':''}" onclick="switchDay(${d})" id="nav-day${d}">
+      ${iconArr[i] || navIcons.generic}
+      <span>${dayData.date}</span>
+      <span class="nav-item-title">${dayData.title}</span>
+    </div>`;
+  }).join('');
+
+  // Add day button (edit mode only)
+  html += `<button class="add-day-btn" onclick="openAddDayModal()" title="新增旅遊日">
+    <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19" stroke-linecap="round" stroke-width="1.5"/><line x1="5" y1="12" x2="19" y2="12" stroke-linecap="round" stroke-width="1.5"/></svg>
+    <span>新增</span>
+  </button>`;
+
+  nav.innerHTML = html;
+  if (editMode) nav.classList.add('edit-mode-global');
+  else nav.classList.remove('edit-mode-global');
+}
+
+/* ─── SWITCH DAY ─── */
+function switchDay(day) {
+  currentDay = day;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById(`nav-day${day}`);
+  if (navEl) navEl.classList.add('active');
+
+  const data = itineraryData[day];
+  if (!data) return;
+
+  document.getElementById('header-title').textContent = `Day ${day}：${data.title}`;
+  document.getElementById('header-date').textContent = data.date;
+  const w = data.weather;
+  document.getElementById('header-weather').innerHTML =
+    `${WEATHER_SVG[w.icon]||WEATHER_SVG.sunny} ${w.temp}`;
+
+  renderCards(day);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ─── RENDER CARDS ─── */
+function renderCards(day) {
+  const data = itineraryData[day];
+  const content = document.getElementById('app-content');
+  if (!data) { content.innerHTML = ''; return; }
+
+  const fromNotion = !!localStorage.getItem('kansai_notion_db');
+  const badge = fromNotion ? `<span class="notion-badge">${ICONS.sync} Notion</span>` : '';
+
+  let html = `<div class="section-label">${data.date} · ${data.events.length} 個行程${badge}</div>`;
+
+  // Add card button at top
+  html += `<button class="add-card-btn" onclick="openAddCard(${day})">
+    ${ICONS.plus} 新增行程卡
+  </button>`;
+
+  data.events.forEach((ev) => {
+    html += renderCard(ev, day);
+  });
+
+  content.innerHTML = html;
+  if (editMode) content.classList.add('edit-mode');
+  else content.classList.remove('edit-mode');
+}
+
+function renderCard(ev, day) {
+  const cardClass = ev.type==='transport' ? 'card-transport' : ev.type==='food' ? 'card-food' : 'card-spot';
+
+  let tagsHtml = '';
+  if (ev.tags && ev.tags.length) {
+    tagsHtml = '<div class="tags">';
+    ev.tags.forEach(t => {
+      const cls = t.type==='buy' ? 'tag-buy' : t.type==='eat' ? 'tag-eat' : 'tag-code';
+      const pre = t.type==='buy' ? '🛍 ' : t.type==='eat' ? '🍴 ' : '';
+      tagsHtml += `<span class="tag ${cls}">${pre}${t.text}</span>`;
+    });
+    tagsHtml += '</div>';
+  }
+
+  const storyHtml = ev.story
+    ? `<div class="story-box"><span class="story-icon">${ICONS.bulb}</span><span>${ev.story}</span></div>`
+    : '';
+
+  const navHtml = ev.map
+    ? `<a href="${ev.map}" target="_blank" class="nav-btn">${ICONS.nav} 開始導航</a>`
+    : '';
+
+  const editBar = `<div class="card-edit-bar">
+    <button class="btn-sm btn-edit" onclick="openEditCard('${ev.id}',${day})">${ICONS.edit2} 編輯</button>
+    <button class="btn-sm btn-del" onclick="openDeleteCard('${ev.id}',${day})">${ICONS.trash} 刪除</button>
+  </div>`;
+
+  return `<div class="card ${cardClass}" data-id="${ev.id}">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-icon">${ICONS[ev.icon]||ICONS.star}</div>
+        ${ev.title}
+      </div>
+      <div class="card-time">${ev.time}</div>
+    </div>
+    <div class="card-desc">${ev.desc}</div>
+    ${tagsHtml}${storyHtml}${navHtml}
+    ${editBar}
+  </div>`;
+}
+
+/* ─── EDIT MODE ─── */
+function toggleEditPrompt() {
+  if (isAuthenticated) {
+    toggleEditMode();
+  } else {
+    openOverlay('passwordOverlay');
+    setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+  }
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('editToggleBtn');
+  if (editMode) {
+    btn.classList.add('active');
+    document.getElementById('app-content').classList.add('edit-mode');
+  } else {
+    btn.classList.remove('active');
+    document.getElementById('app-content').classList.remove('edit-mode');
+  }
+  renderNav();
+  renderCards(currentDay);
+  showToast(editMode ? '✏️ 編輯模式已開啟' : '🔒 編輯模式已關閉');
+}
+
+function lockEditMode() {
+  isAuthenticated = false;
+  editMode = false;
+  document.getElementById('editToggleBtn').classList.remove('active');
+  document.getElementById('app-content').classList.remove('edit-mode');
+  renderNav();
+  renderCards(currentDay);
+  updateSettingsUI();
+  closeOverlay('settingsModal');
+  showToast('🔒 已鎖定');
+}
+
+/* ─── PASSWORD ─── */
+function getStoredPassword() {
+  return localStorage.getItem('kansai_edit_pw') || 'travel2025';
+}
+
+function checkPassword() {
+  const input = document.getElementById('passwordInput').value;
+  const errEl = document.getElementById('passwordError');
+  if (input === getStoredPassword()) {
+    isAuthenticated = true;
+    closeOverlay('passwordOverlay');
+    document.getElementById('passwordInput').value = '';
+    errEl.style.display = 'none';
+    toggleEditMode();
+    updateSettingsUI();
+  } else {
+    errEl.style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+  }
+}
+
+function changePassword() {
+  const newPw = prompt('輸入新的編輯密碼（至少 6 位）：');
+  if (!newPw) return;
+  if (newPw.length < 6) { showToast('密碼至少需要 6 位數'); return; }
+  localStorage.setItem('kansai_edit_pw', newPw);
+  showToast('✅ 密碼已更新');
+}
+
+/* ─── CARD CRUD ─── */
+function openAddCard(day) {
+  pendingEditId = null;
+  pendingDeleteId = null;
+  document.getElementById('cardModalTitle').textContent = '新增行程';
+  document.getElementById('cardModalSaveBtn').textContent = '新增';
+  clearCardForm();
+  selectType('spot');
+  openOverlay('cardModal');
+}
+
+function openEditCard(eventId, day) {
+  pendingEditId = eventId;
+  document.getElementById('cardModalTitle').textContent = '編輯行程';
+  document.getElementById('cardModalSaveBtn').textContent = '儲存';
+
+  const ev = itineraryData[day].events.find(e => e.id === eventId);
+  if (!ev) return;
+
+  selectType(ev.type);
+  document.getElementById('fieldTime').value = ev.time || '10:00';
+  document.getElementById('fieldIcon').value = ev.icon || 'star';
+  document.getElementById('fieldTitle').value = ev.title || '';
+  document.getElementById('fieldDesc').value = (ev.desc||'').replace(/<br>/g, '\n');
+  document.getElementById('fieldStory').value = ev.story || '';
+  document.getElementById('fieldMap').value = ev.map || '';
+
+  editTags = ev.tags ? JSON.parse(JSON.stringify(ev.tags)) : [];
+  renderTagsArea();
+
+  openOverlay('cardModal');
+}
+
+function saveCard() {
+  const time  = document.getElementById('fieldTime').value;
+  const icon  = document.getElementById('fieldIcon').value;
+  const title = document.getElementById('fieldTitle').value.trim();
+  const desc  = document.getElementById('fieldDesc').value.trim().replace(/\n/g,'<br>');
+  const story = document.getElementById('fieldStory').value.trim();
+  const map   = document.getElementById('fieldMap').value.trim();
+
+  if (!title) { showToast('請輸入標題'); return; }
+
+  const ev = {
+    id:    pendingEditId || ('e' + currentDay + '-' + Date.now()),
+    type:  selectedType,
+    time, icon, title, desc,
+    tags:  editTags.length ? [...editTags] : undefined,
+    story: story || undefined,
+    map:   map || undefined,
+  };
+  // clean undefined
+  Object.keys(ev).forEach(k => ev[k] === undefined && delete ev[k]);
+
+  if (pendingEditId) {
+    const idx = itineraryData[currentDay].events.findIndex(e => e.id === pendingEditId);
+    if (idx !== -1) itineraryData[currentDay].events[idx] = ev;
+  } else {
+    itineraryData[currentDay].events.push(ev);
+  }
+
+  saveData();
+  syncToNotion(ev, pendingEditId ? 'update' : 'create');
+  renderCards(currentDay);
+  closeOverlay('cardModal');
+  showToast(pendingEditId ? '✅ 已更新' : '✅ 已新增');
+}
+
+function openDeleteCard(eventId, day) {
+  pendingDeleteId = eventId;
+  pendingDeleteDay = day;
+  const ev = itineraryData[day].events.find(e => e.id === eventId);
+  document.getElementById('deleteConfirmText').textContent = `「${ev?.title || '此行程'}」將被永久刪除。`;
+  openOverlay('deleteModal');
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const arr = itineraryData[pendingDeleteDay].events;
+  const idx = arr.findIndex(e => e.id === pendingDeleteId);
+  if (idx !== -1) arr.splice(idx, 1);
+  saveData();
+  renderCards(currentDay);
+  closeOverlay('deleteModal');
+  showToast('🗑 已刪除');
+  pendingDeleteId = null;
+}
+
+/* ─── TYPE SELECT ─── */
+function selectType(type) {
+  selectedType = type;
+  document.querySelectorAll('.type-opt').forEach(btn => {
+    const t = btn.getAttribute('data-type');
+    btn.className = 'type-opt' + (t === type ? ` selected-${type}` : '');
+  });
+}
+
+/* ─── TAG SYSTEM ─── */
+function handleTagInput(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = e.target.value.trim();
+    const typeVal = document.getElementById('tagTypeSelect').value;
+    if (!val) return;
+    editTags.push({ type: typeVal, text: val });
+    e.target.value = '';
+    renderTagsArea();
+  }
+}
+
+function renderTagsArea() {
+  const area = document.getElementById('tagsArea');
+  area.innerHTML = '';
+  editTags.forEach((t, i) => {
+    const cls = t.type==='buy' ? 'tag-buy' : t.type==='eat' ? 'tag-eat' : 'tag-code';
+    const span = document.createElement('span');
+    span.className = `tag ${cls}`;
+    span.textContent = t.text;
+    span.onclick = () => { editTags.splice(i, 1); renderTagsArea(); };
+    area.appendChild(span);
+  });
+  // add the input field back inside area
+  const inp = document.createElement('input');
+  inp.id = 'tagInputField';
+  inp.className = 'tag-input-field';
+  inp.placeholder = editTags.length ? '' : '輸入後按 Enter';
+  inp.addEventListener('keydown', handleTagInput);
+  area.appendChild(inp);
+}
+
+function clearCardForm() {
+  document.getElementById('fieldTime').value = '10:00';
+  document.getElementById('fieldIcon').value = 'star';
+  document.getElementById('fieldTitle').value = '';
+  document.getElementById('fieldDesc').value = '';
+  document.getElementById('fieldStory').value = '';
+  document.getElementById('fieldMap').value = '';
+  editTags = [];
+  renderTagsArea();
+}
+
+/* ─── ADD DAY ─── */
+function openAddDayModal() { openOverlay('addDayModal'); }
+
+function saveNewDay() {
+  const month = document.getElementById('newDayMonth').value;
+  const date  = document.getElementById('newDayDate').value;
+  const title = document.getElementById('newDayTitle').value.trim();
+  const wIcon = document.getElementById('newDayWeatherIcon').value;
+  const wTemp = document.getElementById('newDayTemp').value || '22°C';
+
+  if (!month||!date||!title) { showToast('請填寫月份、日期與標題'); return; }
+
+  const existingKeys = Object.keys(itineraryData).map(Number);
+  const newKey = Math.max(...existingKeys) + 1;
+
+  itineraryData[newKey] = {
+    title, date: `${month}月${date}日`,
+    weather: { icon: wIcon, temp: wTemp },
+    events: []
+  };
+
+  saveData();
+  renderNav();
+  closeOverlay('addDayModal');
+  switchDay(newKey);
+  showToast('✅ 已新增旅遊日');
+
+  // clear
+  ['newDayMonth','newDayDate','newDayTitle','newDayTemp'].forEach(id => document.getElementById(id).value='');
+}
+
+/* ─── NOTION ─── */
+function getCFWorkerURL() { return localStorage.getItem('kansai_cf_worker') || ''; }
+function getNotionToken()  { return localStorage.getItem('kansai_notion_token') || ''; }
+function getNotionDbId()   { return localStorage.getItem('kansai_notion_db') || ''; }
+
+function setCFWorker() {
+  const cur = getCFWorkerURL();
+  const val = prompt('輸入 Cloudflare Worker URL：\n（例：https://my-proxy.username.workers.dev）', cur);
+  if (val === null) return;
+  localStorage.setItem('kansai_cf_worker', val.trim());
+  updateSettingsUI();
+  showToast('✅ Worker URL 已儲存');
+}
+function setNotionToken() {
+  const cur = getNotionToken();
+  const val = prompt('輸入 Notion Integration Token：\n（以 secret_ 開頭）', cur ? '（已設定）' : '');
+  if (val === null || val === '（已設定）') return;
+  localStorage.setItem('kansai_notion_token', val.trim());
+  updateSettingsUI();
+  showToast('✅ Token 已儲存');
+}
+function setNotionDb() {
+  const cur = getNotionDbId();
+  const val = prompt('輸入 Notion Database ID：\n（32位英數字串，可從 Notion 分享連結中取得）', cur);
+  if (val === null) return;
+  localStorage.setItem('kansai_notion_db', val.trim());
+  updateSettingsUI();
+  showToast('✅ Database ID 已儲存');
+}
+
+async function testNotion() {
+  const statusEl = document.getElementById('notionConnStatus');
+  const worker = getCFWorkerURL();
+  const token  = getNotionToken();
+  const dbId   = getNotionDbId();
+
+  if (!worker || !token || !dbId) {
+    statusEl.innerHTML = '<span class="status-dot err"></span>尚未完整設定';
+    showToast('請先設定 Worker URL、Token 和 Database ID');
+    return;
+  }
+
+  statusEl.innerHTML = '<span class="status-dot idle"></span>測試中…';
+
+  try {
+    const res = await fetch(`${worker}/notion`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        method: 'GET',
+        endpoint: `/databases/${dbId}`,
+        token
+      })
+    });
+    const data = await res.json();
+    if (data.object === 'database' || data.id) {
+      statusEl.innerHTML = `<span class="status-dot ok"></span>連線成功 ✓`;
+      document.getElementById('notionSyncBtn').classList.add('connected');
+      showToast('✅ Notion 連線成功');
+    } else {
+      throw new Error(data.message || 'Unknown error');
+    }
+  } catch(e) {
+    statusEl.innerHTML = `<span class="status-dot err"></span>連線失敗：${e.message}`;
+    showToast('❌ 連線失敗，請檢查設定');
+  }
+}
+
+async function handleNotionSync() {
+  const worker = getCFWorkerURL();
+  const token  = getNotionToken();
+  const dbId   = getNotionDbId();
+
+  if (!worker || !token || !dbId) {
+    openSettings();
+    showToast('請先完成 Notion 設定');
+    return;
+  }
+
+  const btn = document.getElementById('notionSyncBtn');
+  btn.classList.add('syncing');
+  showToast('🔄 同步中…');
+
+  try {
+    const res = await fetch(`${worker}/notion`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        method: 'POST',
+        endpoint: `/databases/${dbId}/query`,
+        token,
+        body: { page_size: 100 }
+      })
+    });
+    const data = await res.json();
+    if (data.results) {
+      const imported = parseNotionPages(data.results);
+      if (Object.keys(imported).length) {
+        itineraryData = imported;
+        saveData();
+        renderNav();
+        renderCards(currentDay);
+        showToast(`✅ 已從 Notion 同步 ${data.results.length} 筆`);
+        btn.classList.add('connected');
+      } else {
+        showToast('Notion 資料庫為空，使用本地資料');
+      }
+    } else {
+      throw new Error(data.message || 'Query failed');
+    }
+  } catch(e) {
+    showToast('❌ 同步失敗：' + e.message);
+  } finally {
+    btn.classList.remove('syncing');
+  }
+}
+
+// Push single event to Notion
+async function syncToNotion(ev, action) {
+  const worker = getCFWorkerURL();
+  const token  = getNotionToken();
+  const dbId   = getNotionDbId();
+  if (!worker || !token || !dbId) return;
+
+  const day = itineraryData[currentDay];
+  const props = {
+    "Name":    { title: [{ text: { content: ev.title } }] },
+    "Day":     { number: currentDay },
+    "DayTitle":{ rich_text: [{ text: { content: day.title } }] },
+    "Date":    { rich_text: [{ text: { content: day.date } }] },
+    "Time":    { rich_text: [{ text: { content: ev.time||'' } }] },
+    "Type":    { select: { name: ev.type } },
+    "Icon":    { rich_text: [{ text: { content: ev.icon||'' } }] },
+    "Desc":    { rich_text: [{ text: { content: ev.desc||'' } }] },
+    "Story":   { rich_text: [{ text: { content: ev.story||'' } }] },
+    "Map":     { url: ev.map || null },
+    "Tags":    { rich_text: [{ text: { content: JSON.stringify(ev.tags||[]) } }] },
+    "EventId": { rich_text: [{ text: { content: ev.id } }] },
+  };
+
+  try {
+    if (action === 'create') {
+      await fetch(`${worker}/notion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'POST',
+          endpoint: '/pages',
+          token,
+          body: { parent: { database_id: dbId }, properties: props }
+        })
+      });
+    }
+    // For update/delete: would need page_id stored; simplified here
+  } catch(e) {
+    console.warn('Notion sync failed:', e);
+  }
+}
+
+// Parse Notion API results back into itineraryData shape
+function parseNotionPages(results) {
+  const days = {};
+  results.forEach(page => {
+    const p = page.properties;
+    const dayNum  = p['Day']?.number;
+    const title   = p['Name']?.title?.[0]?.plain_text || '';
+    const dayTitle= p['DayTitle']?.rich_text?.[0]?.plain_text || '旅遊日';
+    const date    = p['Date']?.rich_text?.[0]?.plain_text || '';
+    const time    = p['Time']?.rich_text?.[0]?.plain_text || '09:00';
+    const type    = p['Type']?.select?.name || 'spot';
+    const icon    = p['Icon']?.rich_text?.[0]?.plain_text || 'star';
+    const desc    = p['Desc']?.rich_text?.[0]?.plain_text || '';
+    const story   = p['Story']?.rich_text?.[0]?.plain_text || '';
+    const map     = p['Map']?.url || '';
+    const tagsStr = p['Tags']?.rich_text?.[0]?.plain_text || '[]';
+    const eventId = p['EventId']?.rich_text?.[0]?.plain_text || ('n-'+page.id);
+
+    if (!dayNum) return;
+
+    if (!days[dayNum]) {
+      days[dayNum] = {
+        title: dayTitle, date,
+        weather: { icon: 'sunny', temp: '22°C' },
+        events: []
+      };
+    }
+
+    let tags;
+    try { tags = JSON.parse(tagsStr); } catch { tags = []; }
+
+    const ev = { id: eventId, type, time, icon, title, desc };
+    if (story) ev.story = story;
+    if (map)   ev.map   = map;
+    if (tags.length) ev.tags = tags;
+
+    days[dayNum].events.push(ev);
+  });
+
+  // Sort events by time
+  Object.values(days).forEach(d => {
+    d.events.sort((a,b) => a.time.localeCompare(b.time));
+  });
+
+  return days;
+}
+
+/* ─── SETTINGS UI ─── */
+function openSettings() { updateSettingsUI(); openOverlay('settingsModal'); }
+
+function updateSettingsUI() {
+  const cfWorker = getCFWorkerURL();
+  const token    = getNotionToken();
+  const dbId     = getNotionDbId();
+
+  document.getElementById('cfWorkerStatus').textContent = cfWorker
+    ? cfWorker.replace(/^https?:\/\//, '').slice(0,30)+'…'
+    : '尚未設定';
+  document.getElementById('notionTokenStatus').textContent = token
+    ? 'secret_●●●●●●●●' : '尚未設定';
+  document.getElementById('notionDbStatus').textContent = dbId
+    ? dbId.slice(0,8)+'…' : '尚未設定';
+
+  document.getElementById('editStatusText').textContent = isAuthenticated
+    ? '✏️ 已解鎖編輯模式' : '🔒 未解鎖';
+  document.getElementById('lockBtn').style.display = isAuthenticated ? 'inline-flex' : 'none';
+}
+
+/* ─── DATA EXPORT / IMPORT ─── */
+function exportData() {
+  const blob = new Blob([JSON.stringify(itineraryData, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kansai_itinerary.json';
+  a.click();
+  showToast('📦 已匯出 JSON');
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      itineraryData = parsed;
+      saveData();
+      renderNav();
+      switchDay(1);
+      closeOverlay('settingsModal');
+      showToast('✅ 匯入成功');
+    } catch {
+      showToast('❌ 檔案格式錯誤');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function resetData() {
+  if (!confirm('確定要重設為預設行程？所有修改將遺失。')) return;
+  itineraryData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  saveData();
+  renderNav();
+  switchDay(1);
+  closeOverlay('settingsModal');
+  showToast('🔄 已重設為預設行程');
+}
+
+/* ─── OVERLAY HELPERS ─── */
+function openOverlay(id)  { document.getElementById(id).classList.add('open'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+// Close on backdrop click
+document.querySelectorAll('.overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) closeOverlay(el.id);
+  });
+});
+
+/* ─── TOAST ─── */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ─── START ─── */
+init();
+</script>
 </body>
 </html>
