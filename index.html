@@ -371,6 +371,36 @@ main{padding:16px;max-width:600px;margin:0 auto;}
 </head>
 <body>
 
+<!-- ─── PAGE GATE (入口密碼) ─── -->
+<div id="pageGate" style="
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px;
+">
+  <div style="text-align:center;max-width:320px;width:100%;">
+    <div style="font-size:48px;margin-bottom:16px;">🗺️</div>
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">關西輕旅行手冊</div>
+    <div style="font-size:12px;color:var(--text-faint);margin-bottom:32px;font-weight:300;">請輸入密碼以進入</div>
+    <div style="background:white;border-radius:20px;padding:24px;border:1.5px solid var(--border);">
+      <input type="password" id="gateInput" placeholder="輸入密碼" style="
+        width:100%;padding:11px 14px;border-radius:12px;
+        border:1.5px solid var(--border);background:var(--aux-bg);
+        font-family:inherit;font-size:15px;color:var(--text);
+        outline:none;text-align:center;letter-spacing:.15em;
+        margin-bottom:12px;
+      " onkeydown="if(event.key==='Enter')checkGate()">
+      <div id="gateError" style="font-size:11px;color:var(--red);margin-bottom:10px;display:none;">密碼錯誤，請再試一次</div>
+      <button onclick="checkGate()" style="
+        width:100%;padding:11px;border-radius:999px;
+        background:var(--purple);color:white;border:none;
+        font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;
+      ">進入</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── HEADER ─── -->
 <header class="app-header">
   <div class="header-left">
@@ -582,8 +612,15 @@ main{padding:16px;max-width:600px;margin:0 auto;}
       <h3>🔐 編輯權限</h3>
       <div class="settings-row">
         <div>
-          <div class="settings-label">編輯密碼</div>
-          <div class="settings-sub">設定後才能進入編輯模式</div>
+          <div class="settings-label">頁面入口密碼</div>
+          <div class="settings-sub">進入頁面前需要輸入的密碼</div>
+        </div>
+        <button class="btn-sm btn-edit" onclick="changeGatePassword()">修改</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">編輯模式密碼</div>
+          <div class="settings-sub">解鎖新增/編輯/刪除行程的密碼</div>
         </div>
         <button class="btn-sm btn-edit" onclick="changePassword()">修改</button>
       </div>
@@ -611,13 +648,6 @@ main{padding:16px;max-width:600px;margin:0 auto;}
           <div class="settings-sub" id="notionDbStatus">尚未設定</div>
         </div>
         <button class="btn-sm btn-edit" onclick="setNotionDb()">設定</button>
-      </div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">Notion Integration Token</div>
-          <div class="settings-sub" id="notionTokenStatus">尚未設定</div>
-        </div>
-        <button class="btn-sm btn-edit" onclick="setNotionToken()">設定</button>
       </div>
       <div class="settings-row">
         <div>
@@ -762,8 +792,38 @@ let pendingDeleteDay = null;
 let editTags = [];
 let selectedType = 'spot';
 
+/* ─── PAGE GATE ─── */
+function getGatePassword() {
+  return localStorage.getItem('kansai_gate_pw') || 'kansai2025';
+}
+
+function checkGate() {
+  const input = document.getElementById('gateInput').value;
+  const errEl = document.getElementById('gateError');
+  if (input === getGatePassword()) {
+    document.getElementById('pageGate').style.display = 'none';
+    document.getElementById('gateInput').value = '';
+    errEl.style.display = 'none';
+    sessionStorage.setItem('kansai_gate_ok', '1');
+  } else {
+    errEl.style.display = 'block';
+    document.getElementById('gateInput').value = '';
+    document.getElementById('gateInput').focus();
+  }
+}
+
+// Check if already unlocked this session
+function checkGateOnLoad() {
+  if (sessionStorage.getItem('kansai_gate_ok') === '1') {
+    document.getElementById('pageGate').style.display = 'none';
+  } else {
+    setTimeout(() => document.getElementById('gateInput').focus(), 100);
+  }
+}
+
 /* ─── INIT ─── */
 function init() {
+  checkGateOnLoad();
   loadData();
   renderNav();
   switchDay(1);
@@ -957,6 +1017,14 @@ function checkPassword() {
   }
 }
 
+function changeGatePassword() {
+  const newPw = prompt('設定新的頁面入口密碼（至少 4 位）：');
+  if (!newPw) return;
+  if (newPw.length < 4) { showToast('密碼至少需要 4 位數'); return; }
+  localStorage.setItem('kansai_gate_pw', newPw);
+  showToast('✅ 入口密碼已更新');
+}
+
 function changePassword() {
   const newPw = prompt('輸入新的編輯密碼（至少 6 位）：');
   if (!newPw) return;
@@ -1139,7 +1207,6 @@ function saveNewDay() {
 
 /* ─── NOTION ─── */
 function getCFWorkerURL() { return localStorage.getItem('kansai_cf_worker') || ''; }
-function getNotionToken()  { return localStorage.getItem('kansai_notion_token') || ''; }
 function getNotionDbId()   { return localStorage.getItem('kansai_notion_db') || ''; }
 
 function setCFWorker() {
@@ -1150,17 +1217,9 @@ function setCFWorker() {
   updateSettingsUI();
   showToast('✅ Worker URL 已儲存');
 }
-function setNotionToken() {
-  const cur = getNotionToken();
-  const val = prompt('輸入 Notion Integration Token：\n（以 secret_ 開頭）', cur ? '（已設定）' : '');
-  if (val === null || val === '（已設定）') return;
-  localStorage.setItem('kansai_notion_token', val.trim());
-  updateSettingsUI();
-  showToast('✅ Token 已儲存');
-}
 function setNotionDb() {
   const cur = getNotionDbId();
-  const val = prompt('輸入 Notion Database ID：\n（32位英數字串，可從 Notion 分享連結中取得）', cur);
+  const val = prompt('輸入 Notion Database ID：\n（32位英數字串）', cur);
   if (val === null) return;
   localStorage.setItem('kansai_notion_db', val.trim());
   updateSettingsUI();
@@ -1170,12 +1229,11 @@ function setNotionDb() {
 async function testNotion() {
   const statusEl = document.getElementById('notionConnStatus');
   const worker = getCFWorkerURL();
-  const token  = getNotionToken();
   const dbId   = getNotionDbId();
 
-  if (!worker || !token || !dbId) {
+  if (!worker || !dbId) {
     statusEl.innerHTML = '<span class="status-dot err"></span>尚未完整設定';
-    showToast('請先設定 Worker URL、Token 和 Database ID');
+    showToast('請先設定 Worker URL 和 Database ID');
     return;
   }
 
@@ -1187,8 +1245,8 @@ async function testNotion() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         method: 'GET',
-        endpoint: `/databases/${dbId}`,
-        token
+        endpoint: `/databases/${dbId}`
+        // Token 由 Worker 環境變數提供，前端不傳
       })
     });
     const data = await res.json();
@@ -1207,10 +1265,9 @@ async function testNotion() {
 
 async function handleNotionSync() {
   const worker = getCFWorkerURL();
-  const token  = getNotionToken();
   const dbId   = getNotionDbId();
 
-  if (!worker || !token || !dbId) {
+  if (!worker || !dbId) {
     openSettings();
     showToast('請先完成 Notion 設定');
     return;
@@ -1227,8 +1284,7 @@ async function handleNotionSync() {
       body: JSON.stringify({
         method: 'POST',
         endpoint: `/databases/${dbId}/query`,
-        token,
-        body: { page_size: 100 }
+        notionBody: { page_size: 100 }
       })
     });
     const data = await res.json();
@@ -1257,9 +1313,8 @@ async function handleNotionSync() {
 // Push single event to Notion
 async function syncToNotion(ev, action) {
   const worker = getCFWorkerURL();
-  const token  = getNotionToken();
   const dbId   = getNotionDbId();
-  if (!worker || !token || !dbId) return;
+  if (!worker || !dbId) return;
 
   const day = itineraryData[currentDay];
   const props = {
@@ -1285,12 +1340,10 @@ async function syncToNotion(ev, action) {
         body: JSON.stringify({
           method: 'POST',
           endpoint: '/pages',
-          token,
-          body: { parent: { database_id: dbId }, properties: props }
+          notionBody: { parent: { database_id: dbId }, properties: props }
         })
       });
     }
-    // For update/delete: would need page_id stored; simplified here
   } catch(e) {
     console.warn('Notion sync failed:', e);
   }
@@ -1299,10 +1352,9 @@ async function syncToNotion(ev, action) {
 // Push ALL events to Notion at once
 async function pushAllToNotion() {
   const worker = getCFWorkerURL();
-  const token  = getNotionToken();
   const dbId   = getNotionDbId();
 
-  if (!worker || !token || !dbId) {
+  if (!worker || !dbId) {
     showToast('請先完成 Notion 設定並測試連線');
     return;
   }
@@ -1349,8 +1401,7 @@ async function pushAllToNotion() {
         body: JSON.stringify({
           method: 'POST',
           endpoint: '/pages',
-          token,
-          body: { parent: { database_id: dbId }, properties: props }
+          notionBody: { parent: { database_id: dbId }, properties: props }
         })
       });
       const data = await res.json();
@@ -1429,14 +1480,11 @@ function openSettings() { updateSettingsUI(); openOverlay('settingsModal'); }
 
 function updateSettingsUI() {
   const cfWorker = getCFWorkerURL();
-  const token    = getNotionToken();
   const dbId     = getNotionDbId();
 
   document.getElementById('cfWorkerStatus').textContent = cfWorker
-    ? cfWorker.replace(/^https?:\/\//, '').slice(0,30)+'…'
+    ? cfWorker.replace(/^https?:\/\//, '').slice(0,32)+'…'
     : '尚未設定';
-  document.getElementById('notionTokenStatus').textContent = token
-    ? 'secret_●●●●●●●●' : '尚未設定';
   document.getElementById('notionDbStatus').textContent = dbId
     ? dbId.slice(0,8)+'…' : '尚未設定';
 
