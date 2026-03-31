@@ -628,6 +628,13 @@ main{padding:16px;max-width:600px;margin:0 auto;}
         </div>
         <button class="btn-sm btn-edit" onclick="testNotion()">測試</button>
       </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">全部同步到 Notion</div>
+          <div class="settings-sub" id="pushAllStatus">將所有行程一次推送到 Notion Database</div>
+        </div>
+        <button class="btn-sm btn-edit" id="pushAllBtn" onclick="pushAllToNotion()">推送</button>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -1286,6 +1293,87 @@ async function syncToNotion(ev, action) {
     // For update/delete: would need page_id stored; simplified here
   } catch(e) {
     console.warn('Notion sync failed:', e);
+  }
+}
+
+// Push ALL events to Notion at once
+async function pushAllToNotion() {
+  const worker = getCFWorkerURL();
+  const token  = getNotionToken();
+  const dbId   = getNotionDbId();
+
+  if (!worker || !token || !dbId) {
+    showToast('請先完成 Notion 設定並測試連線');
+    return;
+  }
+
+  const btn = document.getElementById('pushAllBtn');
+  const statusEl = document.getElementById('pushAllStatus');
+  btn.disabled = true;
+  btn.textContent = '推送中…';
+
+  // Collect all events
+  const allEvents = [];
+  Object.keys(itineraryData).forEach(dayNum => {
+    const day = itineraryData[dayNum];
+    day.events.forEach(ev => {
+      allEvents.push({ dayNum: Number(dayNum), day, ev });
+    });
+  });
+
+  let success = 0;
+  let failed  = 0;
+
+  for (const { dayNum, day, ev } of allEvents) {
+    const props = {
+      "Name":      { title: [{ text: { content: ev.title } }] },
+      "Day":       { number: dayNum },
+      "DayTitle":  { rich_text: [{ text: { content: day.title } }] },
+      "Date":      { rich_text: [{ text: { content: day.date } }] },
+      "WeatherIcon":{ rich_text: [{ text: { content: day.weather?.icon || 'sunny' } }] },
+      "WeatherTemp":{ rich_text: [{ text: { content: day.weather?.temp || '22°C' } }] },
+      "Time":      { rich_text: [{ text: { content: ev.time || '' } }] },
+      "Type":      { select: { name: ev.type } },
+      "Icon":      { rich_text: [{ text: { content: ev.icon || '' } }] },
+      "Desc":      { rich_text: [{ text: { content: ev.desc || '' } }] },
+      "Story":     { rich_text: [{ text: { content: ev.story || '' } }] },
+      "Map":       { url: ev.map || null },
+      "Tags":      { rich_text: [{ text: { content: JSON.stringify(ev.tags || []) } }] },
+      "EventId":   { rich_text: [{ text: { content: ev.id } }] },
+    };
+
+    try {
+      const res = await fetch(`${worker}/notion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'POST',
+          endpoint: '/pages',
+          token,
+          body: { parent: { database_id: dbId }, properties: props }
+        })
+      });
+      const data = await res.json();
+      if (data.id) success++;
+      else failed++;
+    } catch {
+      failed++;
+    }
+
+    // Update progress
+    statusEl.textContent = `推送中：${success + failed} / ${allEvents.length}`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '推送';
+
+  if (failed === 0) {
+    statusEl.textContent = `✅ 成功推送 ${success} 筆到 Notion`;
+    showToast(`✅ 已推送 ${success} 筆行程到 Notion！`);
+    document.getElementById('notionSyncBtn').classList.add('connected');
+  } else {
+    statusEl.textContent = `完成：${success} 成功 / ${failed} 失敗`;
+    showToast(`⚠️ ${success} 筆成功，${failed} 筆失敗`);
   }
 }
 
