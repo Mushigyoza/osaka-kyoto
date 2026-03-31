@@ -1220,6 +1220,11 @@ function saveNewDay() {
 /* ─── NOTION ─── */
 function getCFWorkerURL() { return localStorage.getItem('kansai_cf_worker') || ''; }
 function getNotionDbId()   { return localStorage.getItem('kansai_notion_db') || ''; }
+function getSessionToken() {
+  // 優先用記憶體裡的，沒有就從 sessionStorage 讀
+  if (!sessionToken) sessionToken = sessionStorage.getItem('kansai_session') || null;
+  return sessionToken;
+}
 
 function setCFWorker() {
   const cur = getCFWorkerURL();
@@ -1257,7 +1262,7 @@ async function testNotion() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'notion',
-        sessionToken,
+        getSessionToken(),
         method: 'GET',
         endpoint: `/databases/${dbId}`
       })
@@ -1296,7 +1301,7 @@ async function handleNotionSync() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'notion',
-        sessionToken,
+        getSessionToken(),
         method: 'POST',
         endpoint: `/databases/${dbId}/query`,
         notionBody: { page_size: 100 }
@@ -1354,7 +1359,7 @@ async function syncToNotion(ev, action) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'notion',
-          sessionToken,
+          getSessionToken(),
           method: 'POST',
           endpoint: '/pages',
           notionBody: { parent: { database_id: dbId }, properties: props }
@@ -1416,7 +1421,7 @@ async function pushAllToNotion() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'notion',
-          sessionToken,
+          getSessionToken(),
           method: 'POST',
           endpoint: '/pages',
           notionBody: { parent: { database_id: dbId }, properties: props }
