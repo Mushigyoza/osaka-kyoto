@@ -392,7 +392,7 @@ main{padding:16px;max-width:600px;margin:0 auto;}
         margin-bottom:12px;
       " onkeydown="if(event.key==='Enter')checkGate()">
       <div id="gateError" style="font-size:11px;color:var(--red);margin-bottom:10px;display:none;">密碼錯誤，請再試一次</div>
-      <button onclick="checkGate()" style="
+      <button id="gateBtn" onclick="checkGate()" style="
         width:100%;padding:11px;border-radius:999px;
         background:var(--purple);color:white;border:none;
         font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;
@@ -430,23 +430,6 @@ main{padding:16px;max-width:600px;margin:0 auto;}
 <!-- ══════════════════════════════════
      MODALS
 ══════════════════════════════════ -->
-
-<!-- Password / Edit Unlock -->
-<div class="overlay" id="passwordOverlay">
-  <div class="modal" style="max-width:340px;text-align:center;">
-    <div style="font-size:32px;margin-bottom:8px;">🔐</div>
-    <div class="modal-title" style="justify-content:center;font-size:14px;">輸入編輯密碼</div>
-    <div class="field">
-      <input type="password" id="passwordInput" placeholder="••••••••" style="text-align:center;font-size:16px;letter-spacing:.2em;"
-        onkeydown="if(event.key==='Enter')checkPassword()">
-    </div>
-    <div id="passwordError" style="font-size:11px;color:var(--red);margin-bottom:10px;display:none;">密碼錯誤，請再試一次</div>
-    <div class="modal-footer" style="justify-content:center;border:none;margin:0;padding:0;">
-      <button class="btn-secondary" onclick="closeOverlay('passwordOverlay')">取消</button>
-      <button class="btn-primary" onclick="checkPassword()">解鎖</button>
-    </div>
-  </div>
-</div>
 
 <!-- Card Edit / Add Modal -->
 <div class="overlay" id="cardModal">
@@ -609,27 +592,19 @@ main{padding:16px;max-width:600px;margin:0 auto;}
     </div>
 
     <div class="settings-section">
-      <h3>🔐 編輯權限</h3>
+      <h3>🔐 存取權限</h3>
       <div class="settings-row">
         <div>
-          <div class="settings-label">頁面入口密碼</div>
-          <div class="settings-sub">進入頁面前需要輸入的密碼</div>
+          <div class="settings-label">頁面密碼</div>
+          <div class="settings-sub">密碼存於 Cloudflare Worker，請至 Worker 環境變數修改 GATE_PASSWORD</div>
         </div>
-        <button class="btn-sm btn-edit" onclick="changeGatePassword()">修改</button>
       </div>
       <div class="settings-row">
         <div>
-          <div class="settings-label">編輯模式密碼</div>
-          <div class="settings-sub">解鎖新增/編輯/刪除行程的密碼</div>
+          <div class="settings-label">登出</div>
+          <div class="settings-sub">清除本次登入狀態</div>
         </div>
-        <button class="btn-sm btn-edit" onclick="changePassword()">修改</button>
-      </div>
-      <div class="settings-row" id="editStatusRow">
-        <div>
-          <div class="settings-label">目前狀態</div>
-          <div class="settings-sub" id="editStatusText">未解鎖</div>
-        </div>
-        <button class="btn-sm btn-del" id="lockBtn" onclick="lockEditMode()" style="display:none;">鎖定</button>
+        <button class="btn-sm btn-del" onclick="logout()">登出</button>
       </div>
     </div>
 
@@ -782,39 +757,68 @@ const DEFAULT_DATA = {
 /* ─── STATE ─── */
 let itineraryData = {};
 let currentDay = 1;
-let editMode = false;
-let isAuthenticated = false;
+let editMode = true; // 通過入口密碼後直接有編輯權限
+let sessionToken = null; // 從 Worker 取得的 session token
 
 // pending card operation
-let pendingEditId = null;  // eventId or null (=add)
+let pendingEditId = null;
 let pendingDeleteId = null;
 let pendingDeleteDay = null;
 let editTags = [];
 let selectedType = 'spot';
 
-/* ─── PAGE GATE ─── */
-function getGatePassword() {
-  return localStorage.getItem('kansai_gate_pw') || 'kansai2025';
-}
-
+/* ─── PAGE GATE（Worker 驗證）─── */
 function checkGate() {
-  const input = document.getElementById('gateInput').value;
+  const input = document.getElementById('gateInput').value.trim();
   const errEl = document.getElementById('gateError');
-  if (input === getGatePassword()) {
-    document.getElementById('pageGate').style.display = 'none';
-    document.getElementById('gateInput').value = '';
-    errEl.style.display = 'none';
-    sessionStorage.setItem('kansai_gate_ok', '1');
-  } else {
+  const btn   = document.getElementById('gateBtn');
+
+  if (!input) return;
+
+  const worker = localStorage.getItem('kansai_cf_worker') || '';
+  if (!worker) {
+    errEl.textContent = '尚未設定 Worker URL，請聯繫管理員';
     errEl.style.display = 'block';
-    document.getElementById('gateInput').value = '';
-    document.getElementById('gateInput').focus();
+    return;
   }
+
+  btn.textContent = '驗證中…';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+
+  fetch(`${worker}/notion`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'auth', password: input })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok && data.token) {
+      sessionToken = data.token;
+      sessionStorage.setItem('kansai_session', data.token);
+      document.getElementById('pageGate').style.display = 'none';
+      document.getElementById('gateInput').value = '';
+    } else {
+      errEl.textContent = '密碼錯誤，請再試一次';
+      errEl.style.display = 'block';
+      document.getElementById('gateInput').value = '';
+      document.getElementById('gateInput').focus();
+    }
+  })
+  .catch(() => {
+    errEl.textContent = '連線失敗，請檢查網路';
+    errEl.style.display = 'block';
+  })
+  .finally(() => {
+    btn.textContent = '進入';
+    btn.disabled = false;
+  });
 }
 
-// Check if already unlocked this session
 function checkGateOnLoad() {
-  if (sessionStorage.getItem('kansai_gate_ok') === '1') {
+  const saved = sessionStorage.getItem('kansai_session');
+  if (saved) {
+    sessionToken = saved;
     document.getElementById('pageGate').style.display = 'none';
   } else {
     setTimeout(() => document.getElementById('gateInput').focus(), 100);
@@ -958,14 +962,9 @@ function renderCard(ev, day) {
   </div>`;
 }
 
-/* ─── EDIT MODE ─── */
+/* ─── EDIT MODE（進入頁面後直接開放）─── */
 function toggleEditPrompt() {
-  if (isAuthenticated) {
-    toggleEditMode();
-  } else {
-    openOverlay('passwordOverlay');
-    setTimeout(() => document.getElementById('passwordInput').focus(), 100);
-  }
+  toggleEditMode();
 }
 
 function toggleEditMode() {
@@ -980,11 +979,10 @@ function toggleEditMode() {
   }
   renderNav();
   renderCards(currentDay);
-  showToast(editMode ? '✏️ 編輯模式已開啟' : '🔒 編輯模式已關閉');
+  showToast(editMode ? '✏️ 編輯模式已開啟' : '👁 瀏覽模式');
 }
 
 function lockEditMode() {
-  isAuthenticated = false;
   editMode = false;
   document.getElementById('editToggleBtn').classList.remove('active');
   document.getElementById('app-content').classList.remove('edit-mode');
@@ -992,45 +990,7 @@ function lockEditMode() {
   renderCards(currentDay);
   updateSettingsUI();
   closeOverlay('settingsModal');
-  showToast('🔒 已鎖定');
-}
-
-/* ─── PASSWORD ─── */
-function getStoredPassword() {
-  return localStorage.getItem('kansai_edit_pw') || 'travel2025';
-}
-
-function checkPassword() {
-  const input = document.getElementById('passwordInput').value;
-  const errEl = document.getElementById('passwordError');
-  if (input === getStoredPassword()) {
-    isAuthenticated = true;
-    closeOverlay('passwordOverlay');
-    document.getElementById('passwordInput').value = '';
-    errEl.style.display = 'none';
-    toggleEditMode();
-    updateSettingsUI();
-  } else {
-    errEl.style.display = 'block';
-    document.getElementById('passwordInput').value = '';
-    document.getElementById('passwordInput').focus();
-  }
-}
-
-function changeGatePassword() {
-  const newPw = prompt('設定新的頁面入口密碼（至少 4 位）：');
-  if (!newPw) return;
-  if (newPw.length < 4) { showToast('密碼至少需要 4 位數'); return; }
-  localStorage.setItem('kansai_gate_pw', newPw);
-  showToast('✅ 入口密碼已更新');
-}
-
-function changePassword() {
-  const newPw = prompt('輸入新的編輯密碼（至少 6 位）：');
-  if (!newPw) return;
-  if (newPw.length < 6) { showToast('密碼至少需要 6 位數'); return; }
-  localStorage.setItem('kansai_edit_pw', newPw);
-  showToast('✅ 密碼已更新');
+  showToast('👁 已切換為瀏覽模式');
 }
 
 /* ─── CARD CRUD ─── */
@@ -1244,9 +1204,10 @@ async function testNotion() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        action: 'notion',
+        sessionToken,
         method: 'GET',
         endpoint: `/databases/${dbId}`
-        // Token 由 Worker 環境變數提供，前端不傳
       })
     });
     const data = await res.json();
@@ -1282,6 +1243,8 @@ async function handleNotionSync() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        action: 'notion',
+        sessionToken,
         method: 'POST',
         endpoint: `/databases/${dbId}/query`,
         notionBody: { page_size: 100 }
@@ -1338,6 +1301,8 @@ async function syncToNotion(ev, action) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'notion',
+          sessionToken,
           method: 'POST',
           endpoint: '/pages',
           notionBody: { parent: { database_id: dbId }, properties: props }
@@ -1364,7 +1329,6 @@ async function pushAllToNotion() {
   btn.disabled = true;
   btn.textContent = '推送中…';
 
-  // Collect all events
   const allEvents = [];
   Object.keys(itineraryData).forEach(dayNum => {
     const day = itineraryData[dayNum];
@@ -1399,6 +1363,8 @@ async function pushAllToNotion() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'notion',
+          sessionToken,
           method: 'POST',
           endpoint: '/pages',
           notionBody: { parent: { database_id: dbId }, properties: props }
@@ -1411,7 +1377,6 @@ async function pushAllToNotion() {
       failed++;
     }
 
-    // Update progress
     statusEl.textContent = `推送中：${success + failed} / ${allEvents.length}`;
   }
 
@@ -1478,19 +1443,20 @@ function parseNotionPages(results) {
 /* ─── SETTINGS UI ─── */
 function openSettings() { updateSettingsUI(); openOverlay('settingsModal'); }
 
+function logout() {
+  sessionStorage.removeItem('kansai_session');
+  sessionToken = null;
+  location.reload();
+}
+
 function updateSettingsUI() {
   const cfWorker = getCFWorkerURL();
   const dbId     = getNotionDbId();
-
   document.getElementById('cfWorkerStatus').textContent = cfWorker
     ? cfWorker.replace(/^https?:\/\//, '').slice(0,32)+'…'
     : '尚未設定';
   document.getElementById('notionDbStatus').textContent = dbId
     ? dbId.slice(0,8)+'…' : '尚未設定';
-
-  document.getElementById('editStatusText').textContent = isAuthenticated
-    ? '✏️ 已解鎖編輯模式' : '🔒 未解鎖';
-  document.getElementById('lockBtn').style.display = isAuthenticated ? 'inline-flex' : 'none';
 }
 
 /* ─── DATA EXPORT / IMPORT ─── */
