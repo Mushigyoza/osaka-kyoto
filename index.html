@@ -419,9 +419,21 @@ main{padding:16px;max-width:600px;margin:0 auto;}
     <div class="header-date" id="header-date">5月8日</div>
   </div>
   <div class="header-right">
-    <div class="weather-badge" id="header-weather"></div>
+    <!-- 雙時鐘：台灣 / 日本 -->
+    <div id="dual-clock" style="
+      display:flex;align-items:center;gap:6px;
+      background:var(--aux-bg);border:1.5px solid var(--border);
+      border-radius:999px;padding:4px 12px;
+      font-size:11px;color:var(--text-mid);font-weight:500;
+    ">
+      <span style="color:var(--text-faint);font-size:10px;">🇹🇼</span>
+      <span id="clock-tw">--:--</span>
+      <span style="color:var(--border-s);font-size:10px;">｜</span>
+      <span style="color:var(--text-faint);font-size:10px;">🇯🇵</span>
+      <span id="clock-jp">--:--</span>
+    </div>
     <button class="notion-btn" id="notionSyncBtn" title="Notion 同步" onclick="handleNotionSync()">
-      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z" rx="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9l6 6M9 15l6-6" stroke-linecap="round"/></svg>
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round"/></svg>
       <span class="notion-dot"></span>
     </button>
     <button class="edit-toggle-btn" id="editToggleBtn" title="編輯模式" onclick="toggleEditPrompt()">
@@ -857,6 +869,20 @@ function init() {
   renderNav();
   switchDay(1);
   updateSettingsUI();
+  startDualClock();
+}
+
+function startDualClock() {
+  function update() {
+    const now = new Date();
+    const tw = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+    const jp = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const fmt = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    document.getElementById('clock-tw').textContent = fmt(tw);
+    document.getElementById('clock-jp').textContent = fmt(jp);
+  }
+  update();
+  setInterval(update, 1000);
 }
 
 function loadData() {
@@ -886,7 +912,6 @@ function renderNav() {
     return `<div class="nav-item ${d===currentDay?'active':''}" onclick="switchDay(${d})" id="nav-day${d}">
       ${iconArr[i] || navIcons.generic}
       <span>${dayData.date}</span>
-      <span class="nav-item-title">${dayData.title}</span>
     </div>`;
   }).join('');
 
@@ -913,9 +938,6 @@ function switchDay(day) {
 
   document.getElementById('header-title').textContent = `Day ${day}：${data.title}`;
   document.getElementById('header-date').textContent = data.date;
-  const w = data.weather;
-  document.getElementById('header-weather').innerHTML =
-    `${WEATHER_SVG[w.icon]||WEATHER_SVG.sunny} ${w.temp}`;
 
   renderCards(day);
   window.scrollTo({top:0, behavior:'smooth'});
@@ -1225,7 +1247,7 @@ async function testNotion() {
   statusEl.innerHTML = '<span class="status-dot idle"></span>測試中…';
 
   try {
-    const res = await fetch(`${worker}/notion`, {
+    const res = await fetch(`${worker}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1264,7 +1286,7 @@ async function handleNotionSync() {
   showToast('🔄 同步中…');
 
   try {
-    const res = await fetch(`${worker}/notion`, {
+    const res = await fetch(`${worker}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1322,7 +1344,7 @@ async function syncToNotion(ev, action) {
 
   try {
     if (action === 'create') {
-      await fetch(`${worker}/notion`, {
+      await fetch(`${worker}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1384,7 +1406,7 @@ async function pushAllToNotion() {
     };
 
     try {
-      const res = await fetch(`${worker}/notion`, {
+      const res = await fetch(`${worker}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
