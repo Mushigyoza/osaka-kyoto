@@ -804,12 +804,12 @@ function checkGate() {
 
   if (!input) return;
 
-  // 如果 Worker URL 欄位有顯示，先儲存
-  let worker = localStorage.getItem('kansai_cf_worker') || '';
-  if (workerInput.style.display !== 'none' && workerInput.value.trim()) {
-    worker = workerInput.value.trim();
-    localStorage.setItem('kansai_cf_worker', worker);
+  // 先嘗試從輸入欄取得 Worker URL，再從 localStorage 取
+  const workerInputVal = workerInput.value.trim();
+  if (workerInputVal) {
+    localStorage.setItem('kansai_cf_worker', workerInputVal);
   }
+  const worker = localStorage.getItem('kansai_cf_worker') || '';
 
   if (!worker) {
     errEl.textContent = '請填入 Worker URL';
