@@ -1439,7 +1439,13 @@ async function pushAllToNotion() {
       });
       const data = await res.json();
       if (data.id) success++;
-      else failed++;
+      else {
+        failed++;
+        if (failed === 1) {
+          // 顯示第一筆錯誤的詳細內容
+          statusEl.textContent = `錯誤：${data.message || data.error || JSON.stringify(data).slice(0,100)}`;
+        }
+      }
     } catch {
       failed++;
     }
