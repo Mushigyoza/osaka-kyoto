@@ -1372,6 +1372,16 @@ async function syncToNotion(ev, action) {
 }
 
 // Push ALL events to Notion at once
+function safeStr(val) {
+  if (val === null || val === undefined) return '';
+  // 移除 HTML 標籤（如 <br>），替換為換行或空格
+  return String(val)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .trim();
+}
+
 async function pushAllToNotion() {
   const worker = getCFWorkerURL();
   const dbId   = getNotionDbId();
@@ -1399,20 +1409,20 @@ async function pushAllToNotion() {
 
   for (const { dayNum, day, ev } of allEvents) {
     const props = {
-      "Name":      { title: [{ text: { content: ev.title } }] },
+      "Name":      { title: [{ text: { content: safeStr(ev.title) } }] },
       "Day":       { number: dayNum },
-      "DayTitle":  { rich_text: [{ text: { content: day.title } }] },
-      "Date":      { rich_text: [{ text: { content: day.date } }] },
-      "WeatherIcon":{ rich_text: [{ text: { content: day.weather?.icon || 'sunny' } }] },
-      "WeatherTemp":{ rich_text: [{ text: { content: day.weather?.temp || '22°C' } }] },
-      "Time":      { rich_text: [{ text: { content: ev.time || '' } }] },
-      "Type":      { select: { name: ev.type } },
-      "Icon":      { rich_text: [{ text: { content: ev.icon || '' } }] },
-      "Desc":      { rich_text: [{ text: { content: ev.desc || '' } }] },
-      "Story":     { rich_text: [{ text: { content: ev.story || '' } }] },
+      "DayTitle":  { rich_text: [{ text: { content: safeStr(day.title) } }] },
+      "Date":      { rich_text: [{ text: { content: safeStr(day.date) } }] },
+      "WeatherIcon":{ rich_text: [{ text: { content: safeStr(day.weather?.icon || 'sunny') } }] },
+      "WeatherTemp":{ rich_text: [{ text: { content: safeStr(day.weather?.temp || '22°C') } }] },
+      "Time":      { rich_text: [{ text: { content: safeStr(ev.time) } }] },
+      "Type":      { select: { name: safeStr(ev.type) || 'spot' } },
+      "Icon":      { rich_text: [{ text: { content: safeStr(ev.icon) } }] },
+      "Desc":      { rich_text: [{ text: { content: safeStr(ev.desc).slice(0, 2000) } }] },
+      "Story":     { rich_text: [{ text: { content: safeStr(ev.story).slice(0, 2000) } }] },
       "Map":       { url: ev.map || null },
       "Tags":      { rich_text: [{ text: { content: JSON.stringify(ev.tags || []) } }] },
-      "EventId":   { rich_text: [{ text: { content: ev.id } }] },
+      "EventId":   { rich_text: [{ text: { content: safeStr(ev.id) } }] },
     };
 
     try {
