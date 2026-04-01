@@ -1262,7 +1262,7 @@ async function testNotion() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'notion',
-        getSessionToken(),
+        sessionToken: getSessionToken(),
         method: 'GET',
         endpoint: `/databases/${dbId}`
       })
@@ -1301,7 +1301,7 @@ async function handleNotionSync() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'notion',
-        getSessionToken(),
+        sessionToken: getSessionToken(),
         method: 'POST',
         endpoint: `/databases/${dbId}/query`,
         notionBody: { page_size: 100 }
@@ -1359,7 +1359,7 @@ async function syncToNotion(ev, action) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'notion',
-          getSessionToken(),
+          sessionToken: getSessionToken(),
           method: 'POST',
           endpoint: '/pages',
           notionBody: { parent: { database_id: dbId }, properties: props }
@@ -1421,7 +1421,7 @@ async function pushAllToNotion() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'notion',
-          getSessionToken(),
+          sessionToken: getSessionToken(),
           method: 'POST',
           endpoint: '/pages',
           notionBody: { parent: { database_id: dbId }, properties: props }
