@@ -1470,14 +1470,19 @@ async function pushAllToNotion() {
 
   // Step 2：只推送 Notion 裡還沒有的行程
   const allEvents = [];
+  const localIds = [];
   Object.keys(itineraryData).forEach(dayNum => {
     const day = itineraryData[dayNum];
     day.events.forEach(ev => {
+      localIds.push(ev.id);
       if (!existingIds.has(ev.id)) {
         allEvents.push({ dayNum: Number(dayNum), day, ev });
       }
     });
   });
+
+  // Debug：顯示比對結果
+  statusEl.textContent = `本地 ${localIds.length} 筆，Notion ${existingIds.size} 筆，待推送 ${allEvents.length} 筆`;
 
   // 清除 pending 清單
   localStorage.removeItem('kansai_pending_sync');
