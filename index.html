@@ -1311,20 +1311,39 @@ async function handleNotionSync() {
       })
     });
     const data = await res.json();
+
+    // Token 失效或未授權
+    if (data.error === 'Unauthorized') {
+      showToast('❌ 登入已過期，請重新登入');
+      btn.classList.remove('syncing');
+      return;
+    }
+
     if (data.results) {
+      if (data.results.length === 0) {
+        showToast('⚠️ Notion 資料庫為空');
+        btn.classList.remove('syncing');
+        return;
+      }
       const imported = parseNotionPages(data.results);
-      if (Object.keys(imported).length) {
+      const dayCount = Object.keys(imported).length;
+      const eventCount = Object.values(imported).reduce((a,d) => a + d.events.length, 0);
+
+      if (dayCount > 0) {
         itineraryData = imported;
         saveData();
         renderNav();
         renderCards(currentDay);
-        showToast(`✅ 已從 Notion 同步 ${data.results.length} 筆`);
+        showToast(`✅ 同步成功：${dayCount} 天 / ${eventCount} 筆行程`);
         btn.classList.add('connected');
       } else {
-        showToast('Notion 資料庫為空，使用本地資料');
+        // 有資料但解析出 0 天，顯示第一筆的 Day 欄位值供 debug
+        const firstPage = data.results[0];
+        const dayVal = firstPage?.properties?.['Day']?.number;
+        showToast(`⚠️ 收到 ${data.results.length} 筆，但解析失敗（Day=${dayVal}）`);
       }
     } else {
-      throw new Error(data.message || 'Query failed');
+      throw new Error(data.message || data.error || 'Query failed');
     }
   } catch(e) {
     showToast('❌ 同步失敗：' + e.message);
