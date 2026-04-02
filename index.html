@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>關西輕旅行手冊</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1394,15 +1397,58 @@ async function pushAllToNotion() {
   const btn = document.getElementById('pushAllBtn');
   const statusEl = document.getElementById('pushAllStatus');
   btn.disabled = true;
-  btn.textContent = '推送中…';
+  btn.textContent = '檢查中…';
+  statusEl.textContent = '正在讀取 Notion 現有資料…';
 
+  // Step 1：先查詢 Notion 裡已有哪些 EventId
+  let existingIds = new Set();
+  try {
+    const res = await fetch(`${worker}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'notion',
+        sessionToken: getSessionToken(),
+        method: 'POST',
+        endpoint: `/databases/${dbId}/query`,
+        notionBody: { page_size: 100 }
+      })
+    });
+    const data = await res.json();
+    if (data.results) {
+      data.results.forEach(page => {
+        const id = page.properties['EventId']?.rich_text?.[0]?.plain_text;
+        if (id) existingIds.add(id);
+      });
+    }
+  } catch(e) {
+    showToast('❌ 無法讀取 Notion 現有資料');
+    btn.disabled = false;
+    btn.textContent = '推送';
+    return;
+  }
+
+  // Step 2：只推送 Notion 裡還沒有的行程
   const allEvents = [];
   Object.keys(itineraryData).forEach(dayNum => {
     const day = itineraryData[dayNum];
     day.events.forEach(ev => {
-      allEvents.push({ dayNum: Number(dayNum), day, ev });
+      if (!existingIds.has(ev.id)) {
+        allEvents.push({ dayNum: Number(dayNum), day, ev });
+      }
     });
   });
+
+  if (allEvents.length === 0) {
+    statusEl.textContent = '✅ Notion 已是最新，無需同步';
+    btn.disabled = false;
+    btn.textContent = '推送';
+    showToast('✅ Notion 已是最新！');
+    return;
+  }
+
+  statusEl.textContent = `發現 ${allEvents.length} 筆新資料，開始推送…`;
+  btn.textContent = '推送中…';
 
   let success = 0;
   let failed  = 0;
@@ -1442,7 +1488,6 @@ async function pushAllToNotion() {
       else {
         failed++;
         if (failed === 1) {
-          // 顯示第一筆錯誤的詳細內容
           statusEl.textContent = `錯誤：${data.message || data.error || JSON.stringify(data).slice(0,100)}`;
         }
       }
@@ -1457,8 +1502,8 @@ async function pushAllToNotion() {
   btn.textContent = '推送';
 
   if (failed === 0) {
-    statusEl.textContent = `✅ 成功推送 ${success} 筆到 Notion`;
-    showToast(`✅ 已推送 ${success} 筆行程到 Notion！`);
+    statusEl.textContent = `✅ 成功新增 ${success} 筆到 Notion`;
+    showToast(`✅ 已新增 ${success} 筆到 Notion！`);
     document.getElementById('notionSyncBtn').classList.add('connected');
   } else {
     statusEl.textContent = `完成：${success} 成功 / ${failed} 失敗`;
