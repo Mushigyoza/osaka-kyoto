@@ -960,7 +960,17 @@ function renderCards(day) {
   const fromNotion = !!localStorage.getItem('kansai_notion_db');
   const badge = fromNotion ? `<span class="notion-badge">${ICONS.sync} Notion</span>` : '';
 
-  let html = `<div class="section-label">${data.date} · ${data.events.length} 個行程${badge}</div>`;
+  let html = `<div class="section-label">${data.date} · ${data.events.length} 個行程${badge}
+    <button onclick="sortEventsByTime(${day});renderCards(${day});" style="
+      margin-left:auto;padding:3px 10px;border-radius:999px;
+      border:1.5px solid var(--border);background:transparent;
+      font-size:10px;color:var(--text-faint);cursor:pointer;
+      font-family:inherit;transition:all .2s;white-space:nowrap;
+    " onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'"
+       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-faint)'">
+      ↕ 依時間排序
+    </button>
+  </div>`;
 
   // Add card button at top
   html += `<button class="add-card-btn" onclick="openAddCard(${day})">
@@ -1099,7 +1109,6 @@ function saveCard() {
     story: story || undefined,
     map:   map || undefined,
   };
-  // clean undefined
   Object.keys(ev).forEach(k => ev[k] === undefined && delete ev[k]);
 
   if (pendingEditId) {
@@ -1107,13 +1116,25 @@ function saveCard() {
     if (idx !== -1) itineraryData[currentDay].events[idx] = ev;
   } else {
     itineraryData[currentDay].events.push(ev);
+    // 新增後標記這個 ID 需要同步
+    const pending = JSON.parse(localStorage.getItem('kansai_pending_sync') || '[]');
+    pending.push(ev.id);
+    localStorage.setItem('kansai_pending_sync', JSON.stringify(pending));
   }
 
   saveData();
   syncToNotion(ev, pendingEditId ? 'update' : 'create');
+  // 依時間排序
+  sortEventsByTime(currentDay);
   renderCards(currentDay);
   closeOverlay('cardModal');
   showToast(pendingEditId ? '✅ 已更新' : '✅ 已新增');
+}
+
+function sortEventsByTime(day) {
+  if (!itineraryData[day]) return;
+  itineraryData[day].events.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+  saveData();
 }
 
 function openDeleteCard(eventId, day) {
@@ -1457,6 +1478,9 @@ async function pushAllToNotion() {
       }
     });
   });
+
+  // 清除 pending 清單
+  localStorage.removeItem('kansai_pending_sync');
 
   if (allEvents.length === 0) {
     statusEl.textContent = '✅ Notion 已是最新，無需同步';
