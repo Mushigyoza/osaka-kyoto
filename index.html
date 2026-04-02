@@ -1355,13 +1355,12 @@ async function handleNotionSync() {
         saveData();
         renderNav();
         renderCards(currentDay);
-        showToast(`✅ 同步成功：${dayCount} 天 / ${eventCount} 筆行程`);
+        const skipped = data.results.length - eventCount;
+        const skipMsg = skipped > 0 ? `（跳過 ${skipped} 筆無效資料）` : '';
+        showToast(`✅ 同步成功：${dayCount} 天 / ${eventCount} 筆行程 ${skipMsg}`);
         btn.classList.add('connected');
       } else {
-        // 有資料但解析出 0 天，顯示第一筆的 Day 欄位值供 debug
-        const firstPage = data.results[0];
-        const dayVal = firstPage?.properties?.['Day']?.number;
-        showToast(`⚠️ 收到 ${data.results.length} 筆，但解析失敗（Day=${dayVal}）`);
+        showToast(`⚠️ 收到 ${data.results.length} 筆但解析失敗，請確認欄位名稱`);
       }
     } else {
       throw new Error(data.message || data.error || 'Query failed');
@@ -1559,8 +1558,17 @@ function parseNotionPages(results) {
   const days = {};
   results.forEach(page => {
     const p = page.properties;
-    const dayNum  = p['Day']?.number;
+
+    // Day 欄位：支援 number 和 rich_text 兩種格式
+    let dayNum = p['Day']?.number;
+    if (!dayNum && p['Day']?.rich_text?.[0]?.plain_text) {
+      dayNum = parseInt(p['Day'].rich_text[0].plain_text);
+    }
+    if (!dayNum || isNaN(dayNum)) return; // 跳過無效資料
+
     const title   = p['Name']?.title?.[0]?.plain_text || '';
+    if (!title) return; // 跳過沒有標題的資料
+
     const dayTitle= p['DayTitle']?.rich_text?.[0]?.plain_text || '旅遊日';
     const date    = p['Date']?.rich_text?.[0]?.plain_text || '';
     const time    = p['Time']?.rich_text?.[0]?.plain_text || '09:00';
@@ -1571,13 +1579,13 @@ function parseNotionPages(results) {
     const map     = p['Map']?.url || '';
     const tagsStr = p['Tags']?.rich_text?.[0]?.plain_text || '[]';
     const eventId = p['EventId']?.rich_text?.[0]?.plain_text || ('n-'+page.id);
-
-    if (!dayNum) return;
+    const wIcon   = p['WeatherIcon']?.rich_text?.[0]?.plain_text || 'sunny';
+    const wTemp   = p['WeatherTemp']?.rich_text?.[0]?.plain_text || '22°C';
 
     if (!days[dayNum]) {
       days[dayNum] = {
         title: dayTitle, date,
-        weather: { icon: 'sunny', temp: '22°C' },
+        weather: { icon: wIcon, temp: wTemp },
         events: []
       };
     }
@@ -1595,7 +1603,7 @@ function parseNotionPages(results) {
 
   // Sort events by time
   Object.values(days).forEach(d => {
-    d.events.sort((a,b) => a.time.localeCompare(b.time));
+    d.events.sort((a,b) => (a.time||'').localeCompare(b.time||''));
   });
 
   return days;
