@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+  <script>
+  // 自動重新載入到最新版（不快取）
+  const current = window.location.search;
+  if (!current.includes('v=')) {
+    window.location.replace('?v=' + Date.now());
+  }
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
